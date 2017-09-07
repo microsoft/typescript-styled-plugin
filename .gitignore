@@ -1,0 +1,9 @@
+node_modules/
+lib/
+types/
+*.log
+*.swp
+*.swo
+.DS_Store
+
+test-workspace

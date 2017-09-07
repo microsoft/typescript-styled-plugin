@@ -1,0 +1,41 @@
+{
+  "name": "ts-css-plugin",
+  "version": "0.0.1",
+  "description": "TypeScript Language Service Plugin for css",
+  "keywords": [
+    "typescript",
+    "css",
+    "language service"
+  ],
+  "main": "lib/index.js",
+  "scripts": {
+    "compile": "tsc -p .",
+    "lint": "tslint -p tsconfig.json --type-check src/**/*.ts",
+    "e2e": "node e2e/run.js",
+    "watch:compile": "tsc --watch -p .",
+    "watch": "yarn run clean  && run-p watch:*"
+  },
+  "author": "Quramy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mjbvz/ts-graphql-plugin.git"
+  },
+  "dependencies": {
+    "vscode-css-languageservice": "^2.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.22",
+    "glob": "^7.1.2",
+    "tslint": "^5.3.2",
+    "typescript": "^2.3.4"
+  },
+  "peerDependencies": {
+    "typescript": "^2.3.0"
+  },
+  "ava": {
+    "files": [
+      "lib/**/*.test.js"
+    ]
+  }
+}
