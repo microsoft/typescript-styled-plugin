@@ -34,6 +34,7 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const proxy = new LanguageServiceProxyBuilder(info)
         .wrap('getCompletionsAtPosition', delegate => adapter.getCompletionAtPosition.bind(adapter, delegate))
         .wrap('getSemanticDiagnostics', delegate => adapter.getSemanticDiagnostics.bind(adapter, delegate))
+        .wrap('getQuickInfoAtPosition', delegate => adapter.getQuickInfoAtPosition.bind(adapter, delegate))
         .build();
 
     return proxy;

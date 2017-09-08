@@ -7,6 +7,8 @@ import {
     CompletionItem,
     CompletionItemKind,
     Diagnostic,
+    Position,
+    Hover,
 } from 'vscode-languageserver-types';
 
 export interface LanguageServiceAdapterCreateOptions {
@@ -16,6 +18,7 @@ export interface LanguageServiceAdapterCreateOptions {
 
 export type GetCompletionAtPosition = ts.LanguageService['getCompletionsAtPosition'];
 export type GetSemanticDiagnostics = ts.LanguageService['getSemanticDiagnostics'];
+export type GetQuickInfoAtPosition = ts.LanguageService['getQuickInfoAtPosition'];
 
 export interface ScriptSourceHelper {
     getAllNodes: (fileName: string, condition: (n: ts.Node) => boolean) => ts.Node[];
@@ -46,21 +49,32 @@ export class VscodeLanguageServiceAdapter {
         if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
             return delegate(fileName, position);
         }
-
-        const cursor = position - node.getStart();
         const baseLC = this._helper.getLineAndChar(fileName, node.getStart());
         const cursorLC = this._helper.getLineAndChar(fileName, position);
-
         const relativeLC = relative(baseLC, cursorLC);
-        const text = node.getText().slice(1, -1);
 
-        const start = node.getStart() + 1;
-
-        const cssLanguageService = getCSSLanguageService();
-        const doc = this.createTextDocumentForTemplateString(fileName, text, start, baseLC);
+        const cssLanguageService = this.languageService;
+        const doc = this.createTextDocumentForTemplateString(fileName, node);
         const stylesheet = cssLanguageService.parseStylesheet(doc);
         const items = cssLanguageService.doComplete(doc, relativeLC, stylesheet);
         return translateCompletionItems(items);
+    }
+
+    getQuickInfoAtPosition(delegate: GetQuickInfoAtPosition, fileName: string, position: number): ts.QuickInfo {
+        const node = this._helper.getNode(fileName, position);
+        if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+            return delegate(fileName, position);
+        }
+
+        const baseLC = this._helper.getLineAndChar(fileName, node.getStart());
+        const cursorLC = this._helper.getLineAndChar(fileName, position);
+        const relativeLC = relative(baseLC, cursorLC);
+
+        const cssLanguageService = this.languageService;
+        const doc = this.createTextDocumentForTemplateString(fileName, node);
+        const stylesheet = cssLanguageService.parseStylesheet(doc);
+        const hover = cssLanguageService.doHover(doc, relativeLC, stylesheet);
+        return translateHover(hover, position, 1);
     }
 
     getSemanticDiagnostics(delegate: GetSemanticDiagnostics, fileName: string) {
@@ -74,33 +88,28 @@ export class VscodeLanguageServiceAdapter {
             return isTagged(n, this._tagCondition);
         });
 
+        const cssLanguageService = this.languageService;
         const diagonosticsList = nodes.map(node => {
-            const baseLC = this._helper.getLineAndChar(fileName, node.getStart());
-            const text = node.getText().slice(1, -1);
-
-            const start = node.getStart() + 1;
-
-            const cssLanguageService = getCSSLanguageService();
-            const doc = this.createTextDocumentForTemplateString(fileName, text, start, baseLC);
+            const doc = this.createTextDocumentForTemplateString(fileName, node);
             const stylesheet = cssLanguageService.parseStylesheet(doc);
-
             return cssLanguageService.doValidation(doc, stylesheet);
         });
         const result = [...errors];
         diagonosticsList.forEach((diagnostics, i) => {
             const node = nodes[i];
             const nodeLC = this._helper.getLineAndChar(fileName, node.getStart());
-            diagnostics.forEach(d => {
+            const sourceFile = node.getSourceFile();
+            for (const d of diagnostics) {
                 const sl = nodeLC.line + d.range.start.line;
                 const sc = d.range.start.line ?
                     d.range.start.character
-                    : nodeLC.character + d.range.start.character + 1;
+                    : nodeLC.character + d.range.start.character;
                 const el = nodeLC.line + d.range.end.line;
-                const ec = d.range.end.line ? d.range.end.character : nodeLC.character + d.range.end.character + 1;
-                const start = ts.getPositionOfLineAndCharacter(node.getSourceFile(), sl, sc);
-                const end = ts.getPositionOfLineAndCharacter(node.getSourceFile(), el, ec);
-                result.push(translateDiagnostic(d, node.getSourceFile(), start, end - start));
-            });
+                const ec = d.range.end.line ? d.range.end.character : nodeLC.character + d.range.end.character;
+                const start = ts.getPositionOfLineAndCharacter(sourceFile, sl, sc);
+                const end = ts.getPositionOfLineAndCharacter(sourceFile, el, ec);
+                result.push(translateDiagnostic(d, sourceFile, start, end - start));
+            }
         });
         return result;
     }
@@ -114,29 +123,24 @@ export class VscodeLanguageServiceAdapter {
 
     private createTextDocumentForTemplateString(
         fileName: string,
-        text: string,
-        startOffset: number,
-        startPosition: ts.LineAndCharacter,
+        node: ts.Node,
     ): TextDocument {
-        const cssLanguageService = getCSSLanguageService();
+        const text = node.getText().slice(1, -1);
+        const startOffset = node.getStart() + 1;
+        const startPosition = this._helper.getLineAndChar(fileName, node.getStart());
         return {
             uri: 'untitled://embedded.css',
             languageId: 'css',
             version: 1,
             getText: () => text,
-            positionAt: (offset) => {
+            positionAt: (offset: number) => {
                 const docPosition = this._helper.getLineAndChar(fileName, startOffset + offset);
-                const out = relative(startPosition, docPosition);
-                return out;
+                return relative(startPosition, docPosition);
             },
-            offsetAt: (p) => {
-                const docPosition = {
-                    line: startPosition.line + p.line,
-                    character: p.line === 0 ? startPosition.character + p.character : p.character,
-                };
-
-                const offset = this._helper.getOffset(fileName, docPosition.line, docPosition.character) - startOffset;
-                return offset;
+            offsetAt: (p: Position) => {
+                const line = startPosition.line + p.line;
+                const character = p.line === 0 ? startPosition.character + p.character : p.character;
+                return this._helper.getOffset(fileName, line, character) - startOffset;
             },
             lineCount: text.split(/n/g).length + 1,
         };
@@ -220,5 +224,27 @@ function translateDiagnostic(d: Diagnostic, file: ts.SourceFile, start: number, 
         start,
         length,
         source: 'ts-css',
+    };
+}
+
+function translateHover(hover: Hover, start: number, length: number): ts.QuickInfo {
+    const contents: ts.SymbolDisplayPart[] = [];
+    const convertPart = (hoverContents: typeof hover.contents) => {
+        if (typeof hoverContents === 'string') {
+            contents.push({ kind: 'unknown', text: hoverContents });
+        } else if (Array.isArray(hoverContents)) {
+            hoverContents.forEach(convertPart);
+        } else {
+            contents.push({ kind: 'unknown', text: hoverContents.value });
+        }
+    };
+    convertPart(hover.contents);
+    return {
+        kind: '',
+        kindModifiers: '',
+        textSpan: { start, length },
+        displayParts: [],
+        documentation: contents,
+        tags: [],
     };
 }
