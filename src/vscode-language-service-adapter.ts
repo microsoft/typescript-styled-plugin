@@ -1,4 +1,4 @@
-import * as ts from 'typescript';
+import * as ts from 'typescript/lib/tsserverlibrary';
 import { isTagged, TagCondition } from './ts-util/nodes';
 import { getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import {

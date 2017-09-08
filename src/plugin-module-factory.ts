@@ -1,9 +1,9 @@
-import * as ts from 'typescript';
+import * as ts from 'typescript/lib/tsserverlibrary';
 import { VscodeLanguageServiceAdapter, ScriptSourceHelper } from './vscode-language-service-adapter';
 import { LanguageServiceProxyBuilder } from './ts-util/language-service-proxy-builder';
 import { findAllNodes, findNode } from './ts-util/nodes';
 
-function create(info: any/*ts.server.PluginCreateInfo*/): ts.LanguageService {
+function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const logger = (msg: string) => info.project.projectService.logger.info(`[ts-css-plugin] ${msg}`);
     logger('config: ' + JSON.stringify(info.config));
     const getNode = (fileName: string, position: number) => {
