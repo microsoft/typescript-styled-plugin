@@ -1,4 +1,4 @@
-import * as ts from 'typescript/lib/tsserverlibrary';
+import * as ts from 'typescript';
 
 export type TagCondition = string;
 
