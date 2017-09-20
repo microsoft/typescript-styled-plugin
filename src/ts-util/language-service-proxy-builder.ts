@@ -11,7 +11,22 @@ export type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
 export interface TemplateContext {
     fileName: string;
     node: ts.Node;
-    position: number;
+    toOffset(location: ts.LineAndCharacter): number;
+}
+
+class StandardTemplateContext implements TemplateContext {
+    constructor(
+        public readonly fileName: string,
+        public readonly node: ts.Node,
+        private readonly helper: ScriptSourceHelper,
+    ) { }
+
+    toOffset(location: ts.LineAndCharacter): number {
+        const startPosition = this.helper.getLineAndChar(this.fileName, this.node.getStart());
+        return this.helper.getOffset(this.fileName,
+            location.line + startPosition.line,
+            location.line === 0 ? startPosition.character + location.character : location.character);
+    }
 }
 
 export interface TemplateStringLanguageService {
@@ -48,6 +63,7 @@ export class LanguageServiceProxyBuilder {
         private readonly _info: ts.server.PluginCreateInfo,
         private readonly helper: ScriptSourceHelper,
         private readonly adapter: TemplateStringLanguageService,
+        private _tagCondition?: TagCondition,
     ) {
         if (adapter.getCompletionsAtPosition) {
             const call = adapter.getCompletionsAtPosition;
@@ -61,7 +77,8 @@ export class LanguageServiceProxyBuilder {
                     const cursorLC = this.helper.getLineAndChar(fileName, position);
                     const relativeLC = relative(baseLC, cursorLC);
                     const contents = node.getText().slice(1, -1);
-                    return call.call(adapter, contents, relativeLC, { node, fileName, position } as TemplateContext);
+                    return call.call(adapter, contents, relativeLC,
+                        new StandardTemplateContext(fileName, node, this.helper));
                 });
         }
 
@@ -77,7 +94,12 @@ export class LanguageServiceProxyBuilder {
                     const cursorLC = this.helper.getLineAndChar(fileName, position);
                     const relativeLC = relative(baseLC, cursorLC);
                     const contents = node.getText().slice(1, -1);
-                    return call.call(adapter, contents, relativeLC, { node, fileName, position });
+                    const quickInfo = call.call(adapter, contents, relativeLC,
+                            new StandardTemplateContext(fileName, node, this.helper));
+                    if (quickInfo) {
+                        return Object.assign({}, quickInfo, { start: quickInfo.start +  node.getStart() } );
+                    }
+                    return undefined;
                 });
         }
 
@@ -97,7 +119,7 @@ export class LanguageServiceProxyBuilder {
                     const diagonosticsList: ts.Diagnostic[][] = nodes.map(node => {
                         const baseLC = this.helper.getLineAndChar(fileName, node.getStart());
                         const contents = node.getText().slice(1, -1);
-                        return call.call(adapter, contents, { node, fileName, position: baseLC });
+                        return call.call(adapter, contents, new StandardTemplateContext(fileName, node, this.helper));
                     });
                     const result: ts.Diagnostic[] = [];
                     diagonosticsList.forEach((diagnostics, i) => {
@@ -105,7 +127,7 @@ export class LanguageServiceProxyBuilder {
                         const nodeLC = this.helper.getLineAndChar(fileName, node.getStart());
                         const sourceFile = node.getSourceFile();
                         for (const d of diagnostics) {
-                            result.push(Object.assign({}, d, { start: node.getStart() + d.start + 1 }));
+                            result.push(Object.assign({}, d, { start: node.getStart() + (d.start || 0) + 1 }));
                         }
                     });
 

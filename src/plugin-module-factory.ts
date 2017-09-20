@@ -3,7 +3,6 @@ import { VscodeLanguageServiceAdapter, ScriptSourceHelper } from './vscode-langu
 import { LanguageServiceProxyBuilder } from './ts-util/language-service-proxy-builder';
 import { findAllNodes, findNode } from './ts-util/nodes';
 
-
 function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const logger = (msg: string) => info.project.projectService.logger.info(`[ts-css-plugin] ${msg}`);
     logger('config: ' + JSON.stringify(info.config));

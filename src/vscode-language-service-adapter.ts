@@ -45,11 +45,10 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         contents: string,
         position: ts.LineAndCharacter,
         context: TemplateContext,
-    ): ts.CompletionInfo  {
-        const cssLanguageService = this.languageService;
+    ): ts.CompletionInfo {
         const doc = this.createTextDocumentForTemplateString(contents, context);
-        const stylesheet = cssLanguageService.parseStylesheet(doc);
-        const items = cssLanguageService.doComplete(doc, position, stylesheet);
+        const stylesheet = this.languageService.parseStylesheet(doc);
+        const items = this.languageService.doComplete(doc, position, stylesheet);
         return translateCompletionItems(items);
     }
 
@@ -58,12 +57,11 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         position: ts.LineAndCharacter,
         context: TemplateContext,
     ): ts.QuickInfo | undefined {
-        const cssLanguageService = this.languageService;
         const doc = this.createTextDocumentForTemplateString(contents, context);
-        const stylesheet = cssLanguageService.parseStylesheet(doc);
-        const hover = cssLanguageService.doHover(doc, position, stylesheet);
+        const stylesheet = this.languageService.parseStylesheet(doc);
+        const hover = this.languageService.doHover(doc, position, stylesheet);
         if (hover) {
-            return translateHover(hover, context.position, 1);
+            return translateHover(hover, position, context);
         }
         return undefined;
     }
@@ -72,14 +70,11 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         contents: string,
         context: TemplateContext,
     ): ts.Diagnostic[] {
-        const cssLanguageService = this.languageService;
         const doc = this.createTextDocumentForTemplateString(contents, context);
-        const stylesheet = cssLanguageService.parseStylesheet(doc);
-        const diag = cssLanguageService.doValidation(doc, stylesheet);
-        return diag.map(x => {
-            return translateDiagnostic(x, context.node.getSourceFile(),
-                doc.offsetAt(x.range.start),
-                doc.offsetAt(x.range.end) - doc.offsetAt(x.range.start));
+        const stylesheet = this.languageService.parseStylesheet(doc);
+        return this.languageService.doValidation(doc, stylesheet).map(diag => {
+            const start = doc.offsetAt(diag.range.start);
+            return translateDiagnostic(diag, context.node.getSourceFile(), start, doc.offsetAt(diag.range.end) - start);
         });
     }
 
@@ -137,47 +132,47 @@ function translateCompetionEntry(item: CompletionItem): ts.CompletionEntry {
     return {
         name: item.label,
         kindModifiers: 'declare',
-        kind: item.kind ? translateionCompletionItemKind(item.kind) : 'unknown',
+        kind: item.kind ? translateionCompletionItemKind(item.kind) : ts.ScriptElementKind.unknown,
         sortText: '0',
     };
 }
 
-function translateionCompletionItemKind(kind: CompletionItemKind): string {
+function translateionCompletionItemKind(kind: CompletionItemKind): ts.ScriptElementKind {
     switch (kind) {
         case CompletionItemKind.Method:
-            return 'method';
+            return ts.ScriptElementKind.memberFunctionElement;
         case CompletionItemKind.Function:
-            return 'function';
+            return ts.ScriptElementKind.functionElement;
         case CompletionItemKind.Constructor:
-            return 'constructor';
+            return ts.ScriptElementKind.constructorImplementationElement;
         case CompletionItemKind.Field:
         case CompletionItemKind.Variable:
-            return 'variable';
+            return ts.ScriptElementKind.variableElement;
         case CompletionItemKind.Class:
-            return 'class';
+            return ts.ScriptElementKind.classElement;
         case CompletionItemKind.Interface:
-            return 'interface';
+            return ts.ScriptElementKind.interfaceElement;
         case CompletionItemKind.Module:
-            return 'module';
+            return ts.ScriptElementKind.moduleElement;
         case CompletionItemKind.Property:
-            return 'property';
+            return ts.ScriptElementKind.memberVariableElement;
         case CompletionItemKind.Unit:
         case CompletionItemKind.Value:
-            return 'const';
+            return ts.ScriptElementKind.constElement;
         case CompletionItemKind.Enum:
-            return 'enum';
+            return ts.ScriptElementKind.enumElement;
         case CompletionItemKind.Keyword:
-            return 'keyword';
+            return ts.ScriptElementKind.keyword;
         case CompletionItemKind.Color:
-            return 'const';
+            return ts.ScriptElementKind.constElement;
         case CompletionItemKind.Reference:
-            return 'alias';
+            return ts.ScriptElementKind.alias;
         case CompletionItemKind.File:
-            return 'file';
+            return ts.ScriptElementKind.moduleElement;
         case CompletionItemKind.Snippet:
         case CompletionItemKind.Text:
         default:
-            return 'unknown';
+            return ts.ScriptElementKind.unknown;
     }
 }
 
@@ -195,7 +190,11 @@ function translateDiagnostic(d: Diagnostic, file: ts.SourceFile, start: number, 
     };
 }
 
-function translateHover(hover: Hover, start: number, length: number): ts.QuickInfo {
+function translateHover(
+    hover: Hover,
+    position: ts.LineAndCharacter,
+    context: TemplateContext,
+): ts.QuickInfo {
     const contents: ts.SymbolDisplayPart[] = [];
     const convertPart = (hoverContents: typeof hover.contents) => {
         if (typeof hoverContents === 'string') {
@@ -207,10 +206,14 @@ function translateHover(hover: Hover, start: number, length: number): ts.QuickIn
         }
     };
     convertPart(hover.contents);
+    const start = context.toOffset(hover.range ?  hover.range.start : position);
     return {
-        kind: '',
+        kind: ts.ScriptElementKind.unknown,
         kindModifiers: '',
-        textSpan: { start, length },
+        textSpan: {
+            start,
+            length: hover.range ? context.toOffset(hover.range.end) - start : 1,
+        },
         displayParts: [],
         documentation: contents,
         tags: [],
