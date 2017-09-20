@@ -10,15 +10,12 @@ import {
     Position,
     Hover,
 } from 'vscode-languageserver-types';
+import { TemplateContext, TemplateStringLanguageService } from './ts-util/language-service-proxy-builder';
 
 export interface LanguageServiceAdapterCreateOptions {
     logger?: (msg: string) => void;
     tag?: string;
 }
-
-export type GetCompletionAtPosition = ts.LanguageService['getCompletionsAtPosition'];
-export type GetSemanticDiagnostics = ts.LanguageService['getSemanticDiagnostics'];
-export type GetQuickInfoAtPosition = ts.LanguageService['getQuickInfoAtPosition'];
 
 export interface ScriptSourceHelper {
     getAllNodes: (fileName: string, condition: (n: ts.Node) => boolean) => ts.Node[];
@@ -27,7 +24,7 @@ export interface ScriptSourceHelper {
     getOffset(fileName: string, line: number, character: number): number;
 }
 
-export class VscodeLanguageServiceAdapter {
+export class VscodeLanguageServiceAdapter implements TemplateStringLanguageService {
 
     private _tagCondition?: TagCondition;
     private _languageService?: LanguageService;
@@ -44,74 +41,46 @@ export class VscodeLanguageServiceAdapter {
         }
     }
 
-    getCompletionAtPosition(delegate: GetCompletionAtPosition, fileName: string, position: number) {
-        const node = this._helper.getNode(fileName, position);
-        if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-            return delegate(fileName, position);
-        }
-        const baseLC = this._helper.getLineAndChar(fileName, node.getStart());
-        const cursorLC = this._helper.getLineAndChar(fileName, position);
-        const relativeLC = relative(baseLC, cursorLC);
-
+    getCompletionsAtPosition(
+        contents: string,
+        position: ts.LineAndCharacter,
+        context: TemplateContext,
+    ): ts.CompletionInfo  {
         const cssLanguageService = this.languageService;
-        const doc = this.createTextDocumentForTemplateString(fileName, node);
+        const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = cssLanguageService.parseStylesheet(doc);
-        const items = cssLanguageService.doComplete(doc, relativeLC, stylesheet);
+        const items = cssLanguageService.doComplete(doc, position, stylesheet);
         return translateCompletionItems(items);
     }
 
-    getQuickInfoAtPosition(delegate: GetQuickInfoAtPosition, fileName: string, position: number): ts.QuickInfo {
-        const node = this._helper.getNode(fileName, position);
-        if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-            return delegate(fileName, position);
-        }
-
-        const baseLC = this._helper.getLineAndChar(fileName, node.getStart());
-        const cursorLC = this._helper.getLineAndChar(fileName, position);
-        const relativeLC = relative(baseLC, cursorLC);
-
+    getQuickInfoAtPosition(
+        contents: string,
+        position: ts.LineAndCharacter,
+        context: TemplateContext,
+    ): ts.QuickInfo | undefined {
         const cssLanguageService = this.languageService;
-        const doc = this.createTextDocumentForTemplateString(fileName, node);
+        const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = cssLanguageService.parseStylesheet(doc);
-        const hover = cssLanguageService.doHover(doc, relativeLC, stylesheet);
-        return translateHover(hover, position, 1);
+        const hover = cssLanguageService.doHover(doc, position, stylesheet);
+        if (hover) {
+            return translateHover(hover, context.position, 1);
+        }
+        return undefined;
     }
 
-    getSemanticDiagnostics(delegate: GetSemanticDiagnostics, fileName: string) {
-        const errors = delegate(fileName) || [];
-        const allTemplateStringNodes = this._helper.getAllNodes(
-            fileName,
-            (n: ts.Node) => n.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral,
-        );
-        const nodes = allTemplateStringNodes.filter(n => {
-            if (!this._tagCondition) return true;
-            return isTagged(n, this._tagCondition);
-        });
-
+    getSemanticDiagnostics?(
+        contents: string,
+        context: TemplateContext,
+    ): ts.Diagnostic[] {
         const cssLanguageService = this.languageService;
-        const diagonosticsList = nodes.map(node => {
-            const doc = this.createTextDocumentForTemplateString(fileName, node);
-            const stylesheet = cssLanguageService.parseStylesheet(doc);
-            return cssLanguageService.doValidation(doc, stylesheet);
+        const doc = this.createTextDocumentForTemplateString(contents, context);
+        const stylesheet = cssLanguageService.parseStylesheet(doc);
+        const diag = cssLanguageService.doValidation(doc, stylesheet);
+        return diag.map(x => {
+            return translateDiagnostic(x, context.node.getSourceFile(),
+                doc.offsetAt(x.range.start),
+                doc.offsetAt(x.range.end) - doc.offsetAt(x.range.start));
         });
-        const result = [...errors];
-        diagonosticsList.forEach((diagnostics, i) => {
-            const node = nodes[i];
-            const nodeLC = this._helper.getLineAndChar(fileName, node.getStart());
-            const sourceFile = node.getSourceFile();
-            for (const d of diagnostics) {
-                const sl = nodeLC.line + d.range.start.line;
-                const sc = d.range.start.line ?
-                    d.range.start.character
-                    : nodeLC.character + d.range.start.character;
-                const el = nodeLC.line + d.range.end.line;
-                const ec = d.range.end.line ? d.range.end.character : nodeLC.character + d.range.end.character;
-                const start = ts.getPositionOfLineAndCharacter(sourceFile, sl, sc);
-                const end = ts.getPositionOfLineAndCharacter(sourceFile, el, ec);
-                result.push(translateDiagnostic(d, sourceFile, start, end - start));
-            }
-        });
-        return result;
     }
 
     private get languageService(): LanguageService {
@@ -122,27 +91,26 @@ export class VscodeLanguageServiceAdapter {
     }
 
     private createTextDocumentForTemplateString(
-        fileName: string,
-        node: ts.Node,
+        contents: string,
+        context: TemplateContext,
     ): TextDocument {
-        const text = node.getText().slice(1, -1);
-        const startOffset = node.getStart() + 1;
-        const startPosition = this._helper.getLineAndChar(fileName, node.getStart());
+        const startOffset = context.node.getStart() + 1;
+        const startPosition = this._helper.getLineAndChar(context.fileName, context.node.getStart());
         return {
             uri: 'untitled://embedded.css',
             languageId: 'css',
             version: 1,
-            getText: () => text,
+            getText: () => contents,
             positionAt: (offset: number) => {
-                const docPosition = this._helper.getLineAndChar(fileName, startOffset + offset);
+                const docPosition = this._helper.getLineAndChar(context.fileName, startOffset + offset);
                 return relative(startPosition, docPosition);
             },
             offsetAt: (p: Position) => {
                 const line = startPosition.line + p.line;
                 const character = p.line === 0 ? startPosition.character + p.character : p.character;
-                return this._helper.getOffset(fileName, line, character) - startOffset;
+                return this._helper.getOffset(context.fileName, line, character) - startOffset;
             },
-            lineCount: text.split(/n/g).length + 1,
+            lineCount: contents.split(/n/g).length + 1,
         };
     }
 

@@ -3,6 +3,7 @@ import { VscodeLanguageServiceAdapter, ScriptSourceHelper } from './vscode-langu
 import { LanguageServiceProxyBuilder } from './ts-util/language-service-proxy-builder';
 import { findAllNodes, findNode } from './ts-util/nodes';
 
+
 function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const logger = (msg: string) => info.project.projectService.logger.info(`[ts-css-plugin] ${msg}`);
     logger('config: ' + JSON.stringify(info.config));
@@ -31,10 +32,9 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const tag = info.config.tag;
     const adapter = new VscodeLanguageServiceAdapter(helper, { logger, tag });
 
-    const proxy = new LanguageServiceProxyBuilder(info)
-        .wrap('getCompletionsAtPosition', delegate => adapter.getCompletionAtPosition.bind(adapter, delegate))
-        .wrap('getSemanticDiagnostics', delegate => adapter.getSemanticDiagnostics.bind(adapter, delegate))
-        .wrap('getQuickInfoAtPosition', delegate => adapter.getQuickInfoAtPosition.bind(adapter, delegate))
+    const proxy = new LanguageServiceProxyBuilder(info, helper, adapter)
+//        .wrap('getSemanticDiagnostics', delegate => adapter.getSemanticDiagnostics.bind(adapter, delegate))
+  //      .wrap('getQuickInfoAtPosition', delegate => adapter.getQuickInfoAtPosition.bind(adapter, delegate))
         .build();
 
     return proxy;
