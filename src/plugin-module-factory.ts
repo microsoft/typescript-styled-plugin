@@ -1,6 +1,6 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
 import { VscodeLanguageServiceAdapter, ScriptSourceHelper } from './vscode-language-service-adapter';
-import { LanguageServiceProxyBuilder } from './ts-util/language-service-proxy-builder';
+import { createTemplateStringLanguageServiceProxy } from './ts-util/language-service-proxy-builder';
 import { findAllNodes, findNode } from './ts-util/nodes';
 
 function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
@@ -29,14 +29,9 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
         getOffset,
     };
     const tag = info.config.tag;
-    const adapter = new VscodeLanguageServiceAdapter(helper, { logger, tag });
+    const adapter = new VscodeLanguageServiceAdapter(helper, { logger });
 
-    const proxy = new LanguageServiceProxyBuilder(info, helper, adapter)
-//        .wrap('getSemanticDiagnostics', delegate => adapter.getSemanticDiagnostics.bind(adapter, delegate))
-  //      .wrap('getQuickInfoAtPosition', delegate => adapter.getQuickInfoAtPosition.bind(adapter, delegate))
-        .build();
-
-    return proxy;
+    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, tag);
 }
 
 const moduleFactory /*:ts.server.PluginModuleFactory*/ = (mod: { typescript: typeof ts }) => {

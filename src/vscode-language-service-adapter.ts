@@ -14,7 +14,6 @@ import { TemplateContext, TemplateStringLanguageService } from './ts-util/langua
 
 export interface LanguageServiceAdapterCreateOptions {
     logger?: (msg: string) => void;
-    tag?: string;
 }
 
 export interface ScriptSourceHelper {
@@ -26,7 +25,6 @@ export interface ScriptSourceHelper {
 
 export class VscodeLanguageServiceAdapter implements TemplateStringLanguageService {
 
-    private _tagCondition?: TagCondition;
     private _languageService?: LanguageService;
 
     constructor(
@@ -35,9 +33,6 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
     ) {
         if (opt.logger) {
             this._logger = opt.logger;
-        }
-        if (opt.tag) {
-            this._tagCondition = opt.tag;
         }
     }
 

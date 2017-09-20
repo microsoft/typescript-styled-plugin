@@ -29,6 +29,13 @@ class StandardTemplateContext implements TemplateContext {
     }
 }
 
+function relative(from: ts.LineAndCharacter, to: ts.LineAndCharacter) {
+    return {
+        line: to.line - from.line,
+        character: to.line === from.line ? to.character - from.character : to.character,
+    };
+}
+
 export interface TemplateStringLanguageService {
     getCompletionsAtPosition?(
         contents: string,
@@ -48,98 +55,80 @@ export interface TemplateStringLanguageService {
     ): ts.Diagnostic[];
 }
 
-function relative(from: ts.LineAndCharacter, to: ts.LineAndCharacter) {
-    return {
-        line: to.line - from.line,
-        character: to.line === from.line ? to.character - from.character : to.character,
-    };
-}
-
 export class LanguageServiceProxyBuilder {
 
     private _wrappers: any[] = [];
 
     constructor(
-        private readonly _info: ts.server.PluginCreateInfo,
+        private readonly languageService: ts.LanguageService,
         private readonly helper: ScriptSourceHelper,
-        private readonly adapter: TemplateStringLanguageService,
-        private _tagCondition?: TagCondition,
+        private readonly templateStringService: TemplateStringLanguageService,
+        private tagCondition?: TagCondition,
     ) {
-        if (adapter.getCompletionsAtPosition) {
-            const call = adapter.getCompletionsAtPosition;
+        if (templateStringService.getCompletionsAtPosition) {
+            const call = templateStringService.getCompletionsAtPosition;
             this.wrap('getCompletionsAtPosition', delegate =>
                 (fileName: string, position: number) => {
-                    const node = this.helper.getNode(fileName, position);
-                    if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    const node = this.getTemplateNode(fileName, position);
+                    if (!node) {
                         return delegate(fileName, position);
                     }
-                    const baseLC = this.helper.getLineAndChar(fileName, node.getStart());
-                    const cursorLC = this.helper.getLineAndChar(fileName, position);
-                    const relativeLC = relative(baseLC, cursorLC);
                     const contents = node.getText().slice(1, -1);
-                    return call.call(adapter, contents, relativeLC,
+                    return call.call(templateStringService,
+                        contents,
+                        this.relativeLC(fileName, node, position),
                         new StandardTemplateContext(fileName, node, this.helper));
                 });
         }
 
-        if (adapter.getQuickInfoAtPosition) {
-            const call = adapter.getQuickInfoAtPosition;
+        if (templateStringService.getQuickInfoAtPosition) {
+            const call = templateStringService.getQuickInfoAtPosition;
             this.wrap('getQuickInfoAtPosition', delegate =>
                 (fileName: string, position: number) => {
-                    const node = this.helper.getNode(fileName, position);
-                    if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    const node = this.getTemplateNode(fileName, position);
+                    if (!node) {
                         return delegate(fileName, position);
                     }
-                    const baseLC = this.helper.getLineAndChar(fileName, node.getStart());
-                    const cursorLC = this.helper.getLineAndChar(fileName, position);
-                    const relativeLC = relative(baseLC, cursorLC);
                     const contents = node.getText().slice(1, -1);
-                    const quickInfo = call.call(adapter, contents, relativeLC,
-                            new StandardTemplateContext(fileName, node, this.helper));
+                    const quickInfo = call.call(templateStringService,
+                        contents,
+                        this.relativeLC(fileName, node, position),
+                        new StandardTemplateContext(fileName, node, this.helper));
                     if (quickInfo) {
-                        return Object.assign({}, quickInfo, { start: quickInfo.start +  node.getStart() } );
+                        return Object.assign({}, quickInfo, { start: quickInfo.start + node.getStart() });
                     }
                     return undefined;
                 });
         }
 
-        if (adapter.getSemanticDiagnostics) {
-            const call = adapter.getSemanticDiagnostics;
+        if (templateStringService.getSemanticDiagnostics) {
+            const call = templateStringService.getSemanticDiagnostics;
             this.wrap('getSemanticDiagnostics', delegate =>
                 (fileName: string) => {
-                    const errors = delegate(fileName) || [];
-                    const allTemplateStringNodes = this.helper.getAllNodes(
-                        fileName,
-                        (n: ts.Node) => n.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral);
+                    const baseDiagnostics = delegate(fileName);
+                    const templateDiagnostics: ts.Diagnostic[] = [];
+                    for (const templateNode of this.getAllTemplateNodes(fileName)) {
+                        const contents = templateNode.getText().slice(1, -1);
+                        const diagnostics: ts.Diagnostic[] = call.call(templateStringService,
+                            contents,
+                            new StandardTemplateContext(fileName, templateNode, this.helper));
 
-                    const nodes = allTemplateStringNodes.filter(n => {
-                        return true;
-                        // return isTagged(n, this._tagCondition);
-                    });
-                    const diagonosticsList: ts.Diagnostic[][] = nodes.map(node => {
-                        const baseLC = this.helper.getLineAndChar(fileName, node.getStart());
-                        const contents = node.getText().slice(1, -1);
-                        return call.call(adapter, contents, new StandardTemplateContext(fileName, node, this.helper));
-                    });
-                    const result: ts.Diagnostic[] = [];
-                    diagonosticsList.forEach((diagnostics, i) => {
-                        const node = nodes[i];
-                        const nodeLC = this.helper.getLineAndChar(fileName, node.getStart());
-                        const sourceFile = node.getSourceFile();
-                        for (const d of diagnostics) {
-                            result.push(Object.assign({}, d, { start: node.getStart() + (d.start || 0) + 1 }));
+                        for (const diagnostic of diagnostics) {
+                            templateDiagnostics.push(Object.assign({}, diagnostic, {
+                                start: templateNode.getStart() + (diagnostic.start || 0) + 1,
+                            }));
                         }
-                    });
+                    }
 
-                    return [...errors, ...result];
+                    return [...baseDiagnostics, ...templateDiagnostics];
                 });
         }
     }
 
     build() {
-        const ret: any = this._info.languageService;
+        const ret: any = this.languageService;
         this._wrappers.forEach(({ name, wrapper }) => {
-            ret[name] = wrapper((this._info.languageService as any)[name], this._info);
+            ret[name] = wrapper((this.languageService as any)[name]);
         });
         return ret;
     }
@@ -148,4 +137,36 @@ export class LanguageServiceProxyBuilder {
         this._wrappers.push({ name, wrapper });
         return this;
     }
+
+    private relativeLC(fileName: string, withinNode: ts.Node, offset: number) {
+        const baseLC = this.helper.getLineAndChar(fileName, withinNode.getStart());
+        const cursorLC = this.helper.getLineAndChar(fileName, offset);
+        return relative(baseLC, cursorLC);
+    }
+
+    private getTemplateNode(fileName: string, position: number): ts.Node | undefined {
+        const node = this.helper.getNode(fileName, position);
+        if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+            return undefined;
+        }
+        if (!this.tagCondition || isTagged(node, this.tagCondition)) {
+            return node;
+        }
+        return undefined;
+    }
+
+    private getAllTemplateNodes(fileName: string): ts.Node[] {
+        return this.helper.getAllNodes(fileName, node =>
+            node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
+                && (!this.tagCondition || isTagged(node, this.tagCondition)));
+    }
+}
+
+export function createTemplateStringLanguageServiceProxy(
+    languageService: ts.LanguageService,
+    helper: ScriptSourceHelper,
+    templateStringService: TemplateStringLanguageService,
+    tagCondition?: TagCondition,
+): ts.LanguageService {
+    return new LanguageServiceProxyBuilder(languageService, helper, templateStringService, tagCondition).build();
 }
