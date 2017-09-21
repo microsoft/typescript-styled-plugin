@@ -105,20 +105,25 @@ export class LanguageServiceProxyBuilder {
         if (templateStringService.getQuickInfoAtPosition) {
             const call = templateStringService.getQuickInfoAtPosition;
             this.wrap('getQuickInfoAtPosition', delegate =>
-                (fileName: string, position: number) => {
+                (fileName: string, position: number): ts.QuickInfo => {
                     const node = this.getTemplateNode(fileName, position);
                     if (!node) {
                         return delegate(fileName, position);
                     }
                     const contents = node.getText().slice(1, -1);
-                    const quickInfo = call.call(templateStringService,
+                    const quickInfo: ts.QuickInfo | undefined = call.call(templateStringService,
                         contents,
                         this.relativeLC(fileName, node, position),
                         new StandardTemplateContext(fileName, node, this.helper));
                     if (quickInfo) {
-                        return Object.assign({}, quickInfo, { start: quickInfo.start + node.getStart() });
+                        return Object.assign({}, quickInfo, {
+                            textSpan:  {
+                                start: quickInfo.textSpan.start + node.getStart() + 1,
+                                length: quickInfo.textSpan.length
+                            }
+                        });
                     }
-                    return undefined;
+                    return delegate(fileName, position);
                 });
         }
 
