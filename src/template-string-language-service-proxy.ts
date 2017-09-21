@@ -1,11 +1,13 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { ScriptSourceHelper } from '../vscode-language-service-adapter';
 import { isTagged } from './nodes';
-import {
-    Position,
-} from 'vscode-languageserver-types';
-import { TsCssPluginConfiguration } from '../configuration';
-import Logger from '../logger';
+import Logger from './logger';
+
+export interface ScriptSourceHelper {
+    getAllNodes: (fileName: string, condition: (n: ts.Node) => boolean) => ts.Node[];
+    getNode: (fileName: string, position: number) => ts.Node | undefined;
+    getLineAndChar: (fileName: string, position: number) => ts.LineAndCharacter;
+    getOffset(fileName: string, line: number, character: number): number;
+}
 
 export type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
     = (delegate: ts.LanguageService[K], info?: ts.server.PluginCreateInfo) => ts.LanguageService[K];
@@ -23,7 +25,7 @@ export interface TemplateContext {
     /**
      * Map an offset within the template string to a location within the template string
      */
-    toPosition(offset: number): Position;
+    toPosition(offset: number): ts.LineAndCharacter;
 }
 
 class StandardTemplateContext implements TemplateContext {
@@ -33,58 +35,70 @@ class StandardTemplateContext implements TemplateContext {
         private readonly helper: ScriptSourceHelper,
     ) { }
 
-    toOffset(location: ts.LineAndCharacter): number {
-        const startPosition = this.helper.getLineAndChar(this.fileName, this.node.getStart());
+    public toOffset(position: ts.LineAndCharacter): number {
         const docOffset = this.helper.getOffset(this.fileName,
-            location.line + startPosition.line,
-            location.line === 0 ? startPosition.character + location.character : location.character);
-        return docOffset - this.node.getStart() - 1;
+            position.line + this.stringBodyPosition.line,
+            position.line === 0 ? this.stringBodyPosition.character + position.character : position.character);
+        return docOffset - this.stringBodyOffset;
     }
 
-    toPosition(offset: number): Position {
-        const startPosition = this.helper.getLineAndChar(this.fileName, this.node.getStart());
-        const startOffset = this.node.getStart() + 1;
-        const docPosition = this.helper.getLineAndChar(this.fileName, startOffset + offset);
-        return relative(startPosition, docPosition);
+    public toPosition(offset: number): ts.LineAndCharacter {
+        const docPosition = this.helper.getLineAndChar(this.fileName, this.stringBodyOffset + offset);
+        return relative(this.stringBodyPosition, docPosition);
+    }
+
+    private get stringBodyOffset(): number {
+        return this.node.getStart() + 1;
+    }
+
+    private get stringBodyPosition(): ts.LineAndCharacter {
+        return this.helper.getLineAndChar(this.fileName, this.stringBodyOffset);
     }
 }
 
-function relative(from: ts.LineAndCharacter, to: ts.LineAndCharacter) {
+function relative(from: ts.LineAndCharacter, to: ts.LineAndCharacter): ts.LineAndCharacter {
     return {
         line: to.line - from.line,
         character: to.line === from.line ? to.character - from.character : to.character,
     };
 }
 
+/**
+ * 
+ */
 export interface TemplateStringLanguageService {
     getCompletionsAtPosition?(
-        contents: string,
+        body: string,
         position: ts.LineAndCharacter,
         context: TemplateContext,
     ): ts.CompletionInfo;
 
     getQuickInfoAtPosition?(
-        contents: string,
+        body: string,
         position: ts.LineAndCharacter,
         context: TemplateContext,
     ): ts.QuickInfo | undefined;
 
+    getSyntacticDiagnostics?(
+        body: string,
+        context: TemplateContext,
+    ): ts.Diagnostic[];
+
     getSemanticDiagnostics?(
-        contents: string,
+        body: string,
         context: TemplateContext,
     ): ts.Diagnostic[];
 }
 
-export class LanguageServiceProxyBuilder {
+class TemplateLanguageServiceProxyBuilder {
 
     private _wrappers: any[] = [];
 
     constructor(
-        private readonly languageService: ts.LanguageService,
         private readonly helper: ScriptSourceHelper,
         private readonly templateStringService: TemplateStringLanguageService,
         private readonly logger: Logger,
-        private readonly configuration: TsCssPluginConfiguration,
+        private readonly tags: string[],
     ) {
         if (templateStringService.getCompletionsAtPosition) {
             const call = templateStringService.getCompletionsAtPosition;
@@ -97,7 +111,7 @@ export class LanguageServiceProxyBuilder {
                     const contents = node.getText().slice(1, -1);
                     return call.call(templateStringService,
                         contents,
-                        this.relativeLC(fileName, node, position),
+                        this.getRelativePositionWithinNode(fileName, node, position),
                         new StandardTemplateContext(fileName, node, this.helper));
                 });
         }
@@ -113,7 +127,7 @@ export class LanguageServiceProxyBuilder {
                     const contents = node.getText().slice(1, -1);
                     const quickInfo: ts.QuickInfo | undefined = call.call(templateStringService,
                         contents,
-                        this.relativeLC(fileName, node, position),
+                        this.getRelativePositionWithinNode(fileName, node, position),
                         new StandardTemplateContext(fileName, node, this.helper));
                     if (quickInfo) {
                         return Object.assign({}, quickInfo, {
@@ -128,33 +142,26 @@ export class LanguageServiceProxyBuilder {
         }
 
         if (templateStringService.getSemanticDiagnostics) {
-            const call = templateStringService.getSemanticDiagnostics;
+            const call = templateStringService.getSemanticDiagnostics.bind(templateStringService);
             this.wrap('getSemanticDiagnostics', delegate =>
                 (fileName: string) => {
-                    const baseDiagnostics = delegate(fileName);
-                    const templateDiagnostics: ts.Diagnostic[] = [];
-                    for (const templateNode of this.getAllTemplateNodes(fileName)) {
-                        const contents = templateNode.getText().slice(1, -1);
-                        const diagnostics: ts.Diagnostic[] = call.call(templateStringService,
-                            contents,
-                            new StandardTemplateContext(fileName, templateNode, this.helper));
+                    return this.adapterDiagnosticsCall(delegate, call, fileName);
+                });
+        }
 
-                        for (const diagnostic of diagnostics) {
-                            templateDiagnostics.push(Object.assign({}, diagnostic, {
-                                start: templateNode.getStart() + (diagnostic.start || 0) + 1,
-                            }));
-                        }
-                    }
-
-                    return [...baseDiagnostics, ...templateDiagnostics];
+        if (templateStringService.getSyntacticDiagnostics) {
+            const call = templateStringService.getSyntacticDiagnostics.bind(templateStringService);
+            this.wrap('getSyntacticDiagnostics', delegate =>
+                (fileName: string) => {
+                    return this.adapterDiagnosticsCall(delegate, call, fileName);
                 });
         }
     }
 
-    build() {
-        const ret: any = this.languageService;
+    public build(languageService: ts.LanguageService) {
+        const ret: any = languageService;
         this._wrappers.forEach(({ name, wrapper }) => {
-            ret[name] = wrapper((this.languageService as any)[name]);
+            ret[name] = wrapper((languageService as any)[name]);
         });
         return ret;
     }
@@ -164,8 +171,12 @@ export class LanguageServiceProxyBuilder {
         return this;
     }
 
-    private relativeLC(fileName: string, withinNode: ts.Node, offset: number) {
-        const baseLC = this.helper.getLineAndChar(fileName, withinNode.getStart());
+    private getRelativePositionWithinNode(
+        fileName: string,
+        node: ts.Node,
+        offset: number
+    ): ts.LineAndCharacter {        
+        const baseLC = this.helper.getLineAndChar(fileName, node.getStart() + 1);
         const cursorLC = this.helper.getLineAndChar(fileName, offset);
         return relative(baseLC, cursorLC);
     }
@@ -175,8 +186,7 @@ export class LanguageServiceProxyBuilder {
         if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
             return undefined;
         }
-
-        if (isTagged(node, this.configuration.tags)) {
+        if (isTagged(node, this.tags)) {
             return node;
         }
         return undefined;
@@ -184,17 +194,42 @@ export class LanguageServiceProxyBuilder {
 
     private getAllTemplateNodes(fileName: string): ts.Node[] {
         return this.helper.getAllNodes(fileName, node =>
-            node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral && isTagged(node, this.configuration.tags));
+            node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral && isTagged(node, this.tags));
+    }
+
+    private adapterDiagnosticsCall(
+        delegate: (fileName: string) => ts.Diagnostic[],
+        implementation: (body: string, context: TemplateContext) => ts.Diagnostic[],
+        fileName: string
+    ) {
+        const baseDiagnostics = delegate(fileName);
+        const templateDiagnostics: ts.Diagnostic[] = [];
+        for (const templateNode of this.getAllTemplateNodes(fileName)) {
+            const contents = templateNode.getText().slice(1, -1);
+            const diagnostics: ts.Diagnostic[] = implementation(
+                contents,
+                new StandardTemplateContext(fileName, templateNode, this.helper));
+
+            for (const diagnostic of diagnostics) {
+                templateDiagnostics.push(Object.assign({}, diagnostic, {
+                    start: templateNode.getStart() + 1 + (diagnostic.start || 0),
+                }));
+            }
+        }
+        return [...baseDiagnostics, ...templateDiagnostics];        
     }
 }
 
+/**
+ * 
+ */
 export function createTemplateStringLanguageServiceProxy(
     languageService: ts.LanguageService,
     helper: ScriptSourceHelper,
     templateStringService: TemplateStringLanguageService,
     logger: Logger,
-    configuration: TsCssPluginConfiguration,
+    tags: string[],
 ): ts.LanguageService {
-    return new LanguageServiceProxyBuilder(
-        languageService, helper, templateStringService, logger, configuration).build();
+    return new TemplateLanguageServiceProxyBuilder(helper, templateStringService, logger, tags)
+        .build(languageService);
 }

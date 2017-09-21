@@ -1,6 +1,9 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
 
-export function findNode(sourceFile: ts.SourceFile, position: number): ts.Node | undefined {
+export function findNode(
+    sourceFile: ts.SourceFile,
+    position: number
+): ts.Node | undefined {
     function find(node: ts.Node): ts.Node | undefined {
         if (position >= node.getStart() && position < node.getEnd()) {
             return ts.forEachChild(node, find) || node;
@@ -9,7 +12,10 @@ export function findNode(sourceFile: ts.SourceFile, position: number): ts.Node |
     return find(sourceFile);
 }
 
-export function findAllNodes(sourceFile: ts.SourceFile, cond: (n: ts.Node) => boolean): ts.Node[] {
+export function findAllNodes(
+    sourceFile: ts.SourceFile,
+    cond: (n: ts.Node) => boolean
+): ts.Node[] {
     const result: ts.Node[] = [];
     function find(node: ts.Node) {
         if (cond(node)) {
