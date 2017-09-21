@@ -10,8 +10,18 @@ export type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
 
 export interface TemplateContext {
     fileName: string;
+
     node: ts.Node;
+
+    /**
+     * Map a location from within the template string to an offset within the template string
+     */
     toOffset(location: ts.LineAndCharacter): number;
+
+    /**
+     * Map an offset within the template string to a location within the template string
+     */
+    toPosition(offset: number): Position;
 }
 
 class StandardTemplateContext implements TemplateContext {
@@ -23,9 +33,17 @@ class StandardTemplateContext implements TemplateContext {
 
     toOffset(location: ts.LineAndCharacter): number {
         const startPosition = this.helper.getLineAndChar(this.fileName, this.node.getStart());
-        return this.helper.getOffset(this.fileName,
+        const docOffset = this.helper.getOffset(this.fileName,
             location.line + startPosition.line,
             location.line === 0 ? startPosition.character + location.character : location.character);
+        return docOffset - this.node.getStart() - 1;
+    }
+
+    toPosition(offset: number): Position {
+        const startPosition = this.helper.getLineAndChar(this.fileName, this.node.getStart());
+        const startOffset = this.node.getStart() + 1;
+        const docPosition = this.helper.getLineAndChar(this.fileName, startOffset + offset);
+        return relative(startPosition, docPosition);
     }
 }
 

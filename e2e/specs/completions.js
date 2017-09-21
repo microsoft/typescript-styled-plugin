@@ -1,8 +1,8 @@
 const assert = require('assert');
 
 function run(server) {
-    server.send({ command: 'open', arguments: { file: './main.ts', fileContent: 'const q = css`.a { color:`', scriptKindName: "TS" } });
-    server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 26, line: 1, prefix: '' } });
+    server.send({ command: 'open', arguments: { file: './main.ts', fileContent: 'const q = css`color:`', scriptKindName: "TS" } });
+    server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 21, line: 1, prefix: '' } });
     return server.close().then(() => {
         assert.equal(server.responses.length, 3);
         assert.equal(server.responses[2].body.length, 157);

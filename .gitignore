@@ -3,5 +3,7 @@ node_modules/
 *.swp
 *.swo
 .DS_Store
+*.log
+log.txt
 
 test-workspace

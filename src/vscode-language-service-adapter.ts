@@ -12,6 +12,8 @@ import {
 } from 'vscode-languageserver-types';
 import { TemplateContext, TemplateStringLanguageService } from './ts-util/language-service-proxy-builder';
 
+const wrapperPre = ':root{\n';
+
 export interface LanguageServiceAdapterCreateOptions {
     logger?: (msg: string) => void;
 }
@@ -43,7 +45,7 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
     ): ts.CompletionInfo {
         const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = this.languageService.parseStylesheet(doc);
-        const items = this.languageService.doComplete(doc, position, stylesheet);
+        const items = this.languageService.doComplete(doc, this.positionInDoc(position), stylesheet);
         return translateCompletionItems(items);
     }
 
@@ -54,9 +56,9 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
     ): ts.QuickInfo | undefined {
         const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = this.languageService.parseStylesheet(doc);
-        const hover = this.languageService.doHover(doc, position, stylesheet);
+        const hover = this.languageService.doHover(doc, this.positionInDoc(position), stylesheet);
         if (hover) {
-            return translateHover(hover, position, context);
+            return this.translateHover(hover, this.positionInDoc(position), context);
         }
         return undefined;
     }
@@ -68,8 +70,11 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = this.languageService.parseStylesheet(doc);
         return this.languageService.doValidation(doc, stylesheet).map(diag => {
-            const start = doc.offsetAt(diag.range.start);
-            return translateDiagnostic(diag, context.node.getSourceFile(), start, doc.offsetAt(diag.range.end) - start);
+            this._logger('xxxxxx' + doc.offsetAt(diag.range.start) + ' ' +
+                (doc.offsetAt(diag.range.start) - wrapperPre.length));
+            const start = doc.offsetAt(diag.range.start) - wrapperPre.length;
+            return translateDiagnostic(diag, context.node.getSourceFile(), start,
+                doc.offsetAt(diag.range.end) - wrapperPre.length - start);
         });
     }
 
@@ -86,32 +91,74 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
     ): TextDocument {
         const startOffset = context.node.getStart() + 1;
         const startPosition = this._helper.getLineAndChar(context.fileName, context.node.getStart());
+        contents = `${wrapperPre}${contents}}`;
         return {
             uri: 'untitled://embedded.css',
             languageId: 'css',
             version: 1,
             getText: () => contents,
             positionAt: (offset: number) => {
-                const docPosition = this._helper.getLineAndChar(context.fileName, startOffset + offset);
-                return relative(startPosition, docPosition);
+                const pos = context.toPosition(offset - wrapperPre.length);
+                return {
+                    line: pos.line + 1,
+                    character: pos.character,
+                };
             },
             offsetAt: (p: Position) => {
-                const line = startPosition.line + p.line;
-                const character = p.line === 0 ? startPosition.character + p.character : p.character;
-                return this._helper.getOffset(context.fileName, line, character) - startOffset;
+                return context.toOffset({
+                    line: p.line - 1,
+                    character: p.character,
+                }) + wrapperPre.length;
             },
             lineCount: contents.split(/n/g).length + 1,
         };
     }
 
     private _logger: (msg: string) => void = () => { };
-}
 
-function relative(from: ts.LineAndCharacter, to: ts.LineAndCharacter) {
-    return {
-        line: to.line - from.line,
-        character: to.line === from.line ? to.character - from.character : to.character,
-    };
+    private positionInDoc(position: ts.LineAndCharacter): ts.LineAndCharacter {
+        return {
+            line: position.line + 1,
+            character: position.character,
+        };
+    }
+
+    private positionWithinContents(position: ts.LineAndCharacter): ts.LineAndCharacter {
+        return {
+            line: position.line - 1,
+            character: position.character,
+        };
+    }
+
+    private translateHover(
+        hover: Hover,
+        position: ts.LineAndCharacter,
+        context: TemplateContext,
+    ): ts.QuickInfo {
+        const contents: ts.SymbolDisplayPart[] = [];
+        const convertPart = (hoverContents: typeof hover.contents) => {
+            if (typeof hoverContents === 'string') {
+                contents.push({ kind: 'unknown', text: hoverContents });
+            } else if (Array.isArray(hoverContents)) {
+                hoverContents.forEach(convertPart);
+            } else {
+                contents.push({ kind: 'unknown', text: hoverContents.value });
+            }
+        };
+        convertPart(hover.contents);
+        const start = context.toOffset(this.positionWithinContents(hover.range ? hover.range.start : position));
+        return {
+            kind: ts.ScriptElementKind.unknown,
+            kindModifiers: '',
+            textSpan: {
+                start,
+                length: hover.range ? context.toOffset(this.positionWithinContents(hover.range.end))- start : 1,
+            },
+            displayParts: [],
+            documentation: contents,
+            tags: [],
+        };
+    }
 }
 
 function translateCompletionItems(items: CompletionList): ts.CompletionInfo {
@@ -182,35 +229,5 @@ function translateDiagnostic(d: Diagnostic, file: ts.SourceFile, start: number, 
         start,
         length,
         source: 'ts-css',
-    };
-}
-
-function translateHover(
-    hover: Hover,
-    position: ts.LineAndCharacter,
-    context: TemplateContext,
-): ts.QuickInfo {
-    const contents: ts.SymbolDisplayPart[] = [];
-    const convertPart = (hoverContents: typeof hover.contents) => {
-        if (typeof hoverContents === 'string') {
-            contents.push({ kind: 'unknown', text: hoverContents });
-        } else if (Array.isArray(hoverContents)) {
-            hoverContents.forEach(convertPart);
-        } else {
-            contents.push({ kind: 'unknown', text: hoverContents.value });
-        }
-    };
-    convertPart(hover.contents);
-    const start = context.toOffset(hover.range ?  hover.range.start : position);
-    return {
-        kind: ts.ScriptElementKind.unknown,
-        kindModifiers: '',
-        textSpan: {
-            start,
-            length: hover.range ? context.toOffset(hover.range.end) - start : 1,
-        },
-        displayParts: [],
-        documentation: contents,
-        tags: [],
     };
 }
