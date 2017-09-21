@@ -1,9 +1,11 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
 import { ScriptSourceHelper } from '../vscode-language-service-adapter';
-import { isTagged, TagCondition } from './nodes';
+import { isTagged } from './nodes';
 import {
     Position,
 } from 'vscode-languageserver-types';
+import { TsCssPluginConfiguration } from '../configuration';
+import Logger from '../logger';
 
 export type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
     = (delegate: ts.LanguageService[K], info?: ts.server.PluginCreateInfo) => ts.LanguageService[K];
@@ -81,7 +83,8 @@ export class LanguageServiceProxyBuilder {
         private readonly languageService: ts.LanguageService,
         private readonly helper: ScriptSourceHelper,
         private readonly templateStringService: TemplateStringLanguageService,
-        private tagCondition?: TagCondition,
+        private readonly logger: Logger,
+        private configuration: TsCssPluginConfiguration,
     ) {
         if (templateStringService.getCompletionsAtPosition) {
             const call = templateStringService.getCompletionsAtPosition;
@@ -167,7 +170,8 @@ export class LanguageServiceProxyBuilder {
         if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
             return undefined;
         }
-        if (!this.tagCondition || isTagged(node, this.tagCondition)) {
+
+        if (isTagged(node, this.configuration.tags)) {
             return node;
         }
         return undefined;
@@ -175,8 +179,7 @@ export class LanguageServiceProxyBuilder {
 
     private getAllTemplateNodes(fileName: string): ts.Node[] {
         return this.helper.getAllNodes(fileName, node =>
-            node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-                && (!this.tagCondition || isTagged(node, this.tagCondition)));
+            node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral && isTagged(node, this.configuration.tags));
     }
 }
 
@@ -184,7 +187,9 @@ export function createTemplateStringLanguageServiceProxy(
     languageService: ts.LanguageService,
     helper: ScriptSourceHelper,
     templateStringService: TemplateStringLanguageService,
-    tagCondition?: TagCondition,
+    logger: Logger,
+    configuration: TsCssPluginConfiguration,
 ): ts.LanguageService {
-    return new LanguageServiceProxyBuilder(languageService, helper, templateStringService, tagCondition).build();
+    return new LanguageServiceProxyBuilder(
+        languageService, helper, templateStringService, logger, configuration).build();
 }

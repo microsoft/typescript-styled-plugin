@@ -1,5 +1,5 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { isTagged, TagCondition } from './ts-util/nodes';
+import { isTagged } from './ts-util/nodes';
 import { getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import {
     TextDocument,
@@ -11,12 +11,10 @@ import {
     Hover,
 } from 'vscode-languageserver-types';
 import { TemplateContext, TemplateStringLanguageService } from './ts-util/language-service-proxy-builder';
+import * as config from './config';
+import Logger from './logger';
 
 const wrapperPre = ':root{\n';
-
-export interface LanguageServiceAdapterCreateOptions {
-    logger?: (msg: string) => void;
-}
 
 export interface ScriptSourceHelper {
     getAllNodes: (fileName: string, condition: (n: ts.Node) => boolean) => ts.Node[];
@@ -30,13 +28,9 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
     private _languageService?: LanguageService;
 
     constructor(
-        private _helper: ScriptSourceHelper,
-        opt: LanguageServiceAdapterCreateOptions = {},
-    ) {
-        if (opt.logger) {
-            this._logger = opt.logger;
-        }
-    }
+        private helper: ScriptSourceHelper,
+        private logger: Logger,
+    ) { }
 
     getCompletionsAtPosition(
         contents: string,
@@ -70,8 +64,6 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         const doc = this.createTextDocumentForTemplateString(contents, context);
         const stylesheet = this.languageService.parseStylesheet(doc);
         return this.languageService.doValidation(doc, stylesheet).map(diag => {
-            this._logger('xxxxxx' + doc.offsetAt(diag.range.start) + ' ' +
-                (doc.offsetAt(diag.range.start) - wrapperPre.length));
             const start = doc.offsetAt(diag.range.start) - wrapperPre.length;
             return translateDiagnostic(diag, context.node.getSourceFile(), start,
                 doc.offsetAt(diag.range.end) - wrapperPre.length - start);
@@ -90,7 +82,7 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
         context: TemplateContext,
     ): TextDocument {
         const startOffset = context.node.getStart() + 1;
-        const startPosition = this._helper.getLineAndChar(context.fileName, context.node.getStart());
+        const startPosition = this.helper.getLineAndChar(context.fileName, context.node.getStart());
         contents = `${wrapperPre}${contents}}`;
         return {
             uri: 'untitled://embedded.css',
@@ -152,7 +144,7 @@ export class VscodeLanguageServiceAdapter implements TemplateStringLanguageServi
             kindModifiers: '',
             textSpan: {
                 start,
-                length: hover.range ? context.toOffset(this.positionWithinContents(hover.range.end))- start : 1,
+                length: hover.range ? context.toOffset(this.positionWithinContents(hover.range.end)) - start : 1,
             },
             displayParts: [],
             documentation: contents,
@@ -228,6 +220,6 @@ function translateDiagnostic(d: Diagnostic, file: ts.SourceFile, start: number, 
         file,
         start,
         length,
-        source: 'ts-css',
+        source: config.pluginName,
     };
 }

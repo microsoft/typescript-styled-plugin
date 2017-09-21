@@ -2,36 +2,47 @@ import * as ts from 'typescript/lib/tsserverlibrary';
 import { VscodeLanguageServiceAdapter, ScriptSourceHelper } from './vscode-language-service-adapter';
 import { createTemplateStringLanguageServiceProxy } from './ts-util/language-service-proxy-builder';
 import { findAllNodes, findNode } from './ts-util/nodes';
+import { pluginName } from './config';
+import { loadConfiguration } from './configuration';
+import Logger from './logger';
+
+class LanguageServiceScriptSourceHelper implements ScriptSourceHelper {
+    constructor(
+        private readonly languageService: ts.LanguageService,
+    ) { }
+
+    getNode(fileName: string, position: number) {
+        return findNode(this.languageService.getProgram().getSourceFile(fileName), position);
+    }
+    getAllNodes(fileName: string, cond: (n: ts.Node) => boolean) {
+        const s = this.languageService.getProgram().getSourceFile(fileName);
+        return findAllNodes(s, cond);
+    }
+    getLineAndChar(fileName: string, position: number) {
+        const s = this.languageService.getProgram().getSourceFile(fileName);
+        return ts.getLineAndCharacterOfPosition(s, position);
+    }
+
+    getOffset(fileName: string, line: number, character: number) {
+        const s = this.languageService.getProgram().getSourceFile(fileName);
+        return ts.getPositionOfLineAndCharacter(s, line, character);
+    }
+}
 
 function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-    const logger = (msg: string) => info.project.projectService.logger.info(`[ts-css-plugin] ${msg}`);
-    logger('config: ' + JSON.stringify(info.config));
-    const getNode = (fileName: string, position: number) => {
-        return findNode(info.languageService.getProgram().getSourceFile(fileName), position);
-    };
-    const getAllNodes = (fileName: string, cond: (n: ts.Node) => boolean) => {
-        const s = info.languageService.getProgram().getSourceFile(fileName);
-        return findAllNodes(s, cond);
-    };
-    const getLineAndChar = (fileName: string, position: number) => {
-        const s = info.languageService.getProgram().getSourceFile(fileName);
-        return ts.getLineAndCharacterOfPosition(s, position);
+    const config = loadConfiguration(info.config);
+
+    const standardLogger: Logger = {
+        log(msg: string) {
+            info.project.projectService.logger.info(`[${pluginName}] ${msg}`);
+        },
     };
 
-    const getOffset = (fileName: string, line: number, character: number) => {
-        const s = info.languageService.getProgram().getSourceFile(fileName);
-        return ts.getPositionOfLineAndCharacter(s, line, character);
-    };
-    const helper: ScriptSourceHelper = {
-        getNode,
-        getAllNodes,
-        getLineAndChar,
-        getOffset,
-    };
-    const tag = info.config.tag;
-    const adapter = new VscodeLanguageServiceAdapter(helper, { logger });
+    standardLogger.log('config: ' + JSON.stringify(config));
 
-    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, tag);
+    const helper = new LanguageServiceScriptSourceHelper(info.languageService);
+    const adapter = new VscodeLanguageServiceAdapter(helper, standardLogger);
+    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, standardLogger, config);
 }
 
 export = (mod: { typescript: typeof ts }) => {
