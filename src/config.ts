@@ -1,1 +1,1 @@
-export const pluginName = 'ts-css-plugin'
+export const pluginName = 'ts-styled-plugin'

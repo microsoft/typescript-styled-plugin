@@ -84,7 +84,7 @@ export class LanguageServiceProxyBuilder {
         private readonly helper: ScriptSourceHelper,
         private readonly templateStringService: TemplateStringLanguageService,
         private readonly logger: Logger,
-        private configuration: TsCssPluginConfiguration,
+        private readonly configuration: TsCssPluginConfiguration,
     ) {
         if (templateStringService.getCompletionsAtPosition) {
             const call = templateStringService.getCompletionsAtPosition;
