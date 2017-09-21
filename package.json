@@ -5,6 +5,7 @@
   "keywords": [
     "typescript",
     "css",
+    "styled",
     "language service"
   ],
   "main": "lib/index.js",
@@ -15,11 +16,11 @@
     "watch:compile": "tsc --watch -p .",
     "watch": "yarn run clean  && run-p watch:*"
   },
-  "author": "Quramy",
+  "author": "Microsoft",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mjbvz/ts-graphql-plugin.git"
+    "url": "https://github.com/mjbvz/ts-styled-plugin.git"
   },
   "dependencies": {
     "vscode-css-languageservice": "^2.1.4"
@@ -32,10 +33,5 @@
   },
   "peerDependencies": {
     "typescript": "^2.3.0"
-  },
-  "ava": {
-    "files": [
-      "lib/**/*.test.js"
-    ]
   }
 }

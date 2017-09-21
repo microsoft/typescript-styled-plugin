@@ -7,9 +7,7 @@ export interface TsStyledPluginConfiguration {
 export const defaultConfiguration: TsStyledPluginConfiguration = {
     tags: ['styled'],
     validate: true,
-    lint: {
-        'vendorPrefix': 'warning' 
-    }
+    lint: { }
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
