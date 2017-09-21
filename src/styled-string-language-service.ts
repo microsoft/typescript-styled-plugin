@@ -3,6 +3,7 @@ import { getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-l
 import * as vscode from 'vscode-languageserver-types';
 import { TemplateContext, TemplateStringLanguageService } from './template-string-language-service-proxy';
 import * as config from './config';
+import { TsStyledPluginConfiguration } from './configuration';
 
 const wrapperPre = ':root{\n';
 
@@ -10,6 +11,18 @@ const wrapperPre = ':root{\n';
 export default class VscodeLanguageServiceAdapter implements TemplateStringLanguageService {
 
     private _languageService?: LanguageService;
+
+    constructor(
+        private readonly configuration: TsStyledPluginConfiguration
+    ) { }
+
+    private get languageService(): LanguageService {
+        if (!this._languageService) {
+            this._languageService = getCSSLanguageService();
+            this._languageService.configure(this.configuration);
+        }
+        return this._languageService;
+    }
 
     public getCompletionsAtPosition(
         contents: string,
@@ -48,12 +61,6 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
             context);
     }
 
-    private get languageService(): LanguageService {
-        if (!this._languageService) {
-            this._languageService = getCSSLanguageService();
-        }
-        return this._languageService;
-    }
 
     private createVirtualDocument(
         contents: string,

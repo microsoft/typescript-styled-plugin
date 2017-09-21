@@ -1,10 +1,22 @@
-export interface TsCssPluginConfiguration {
+export interface TsStyledPluginConfiguration {
     tags: string[];
+    validate: boolean;
+    lint: { [ key: string ]: any };
 }
 
-export const defaultConfiguration: TsCssPluginConfiguration = {
+export const defaultConfiguration: TsStyledPluginConfiguration = {
     tags: ['styled'],
+    validate: true,
+    lint: {
+        'vendorPrefix': 'warning' 
+    }
 };
 
-export const loadConfiguration = (config: any): TsCssPluginConfiguration =>
-    Object.assign({}, defaultConfiguration, config);
+export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
+    const lint = Object.assign({}, defaultConfiguration.lint, config.lint || {});
+    return {
+        tags: config.tags || defaultConfiguration.tags,
+        validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
+        lint
+    };
+}

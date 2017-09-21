@@ -46,7 +46,7 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     logger.log('config: ' + JSON.stringify(config));
 
     const helper = new LanguageServiceScriptSourceHelper(info.languageService);
-    const adapter = new StyledStringLanguageService();
+    const adapter = new StyledStringLanguageService(config);
     return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, logger, config.tags);
 }
 

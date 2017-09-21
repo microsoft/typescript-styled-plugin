@@ -9,12 +9,11 @@ export interface ScriptSourceHelper {
     getOffset(fileName: string, line: number, character: number): number;
 }
 
-export type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
+type LanguageServiceMethodWrapper<K extends keyof ts.LanguageService>
     = (delegate: ts.LanguageService[K], info?: ts.server.PluginCreateInfo) => ts.LanguageService[K];
 
 export interface TemplateContext {
     fileName: string;
-
     node: ts.Node;
 
     /**
