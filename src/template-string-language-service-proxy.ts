@@ -1,3 +1,8 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+//
+// Original code forked from https://github.com/Quramy/ts-graphql-plugin
+
 import * as ts from 'typescript/lib/tsserverlibrary';
 import { isTagged } from './nodes';
 import Logger from './logger';
