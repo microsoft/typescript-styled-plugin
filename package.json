@@ -9,13 +9,6 @@
     "language service"
   ],
   "main": "lib/index.js",
-  "scripts": {
-    "compile": "tsc -p .",
-    "lint": "tslint -p tsconfig.json --type-check src/**/*.ts",
-    "e2e": "node e2e/run.js",
-    "watch:compile": "tsc --watch -p .",
-    "watch": "yarn run clean  && run-p watch:*"
-  },
   "author": "Microsoft",
   "license": "MIT",
   "repository": {
@@ -33,5 +26,10 @@
   },
   "peerDependencies": {
     "typescript": "^2.3.0"
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch:compile": "tsc --watch -p .",
+    "e2e": "node e2e/run.js"
   }
 }
