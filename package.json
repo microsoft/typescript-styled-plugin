@@ -1,5 +1,5 @@
 {
-  "name": "ts-styled-plugin",
+  "name": "typescript-styled-plugin",
   "version": "0.0.1",
   "description": "TypeScript Language Service Plugin for css",
   "keywords": [
