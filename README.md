@@ -28,10 +28,10 @@ To get started, add a `plugins` section to your [`tsconfig.json`](http://www.typ
 
 To build the typescript-styled-plugin, you'll need [Git](https://git-scm.com/downloads) and [Node.js](https://nodejs.org/).
 
-First, [fork](https://help.github.com/articles/fork-a-repo/) the typescript-styled-plugin repo and clone :
+First, [fork](https://help.github.com/articles/fork-a-repo/) the typescript-styled-plugin repo and clone your fork:
 
 ```bash
-git clone https://github.com/Microsoft/typescript-styled-plugin.git
+git clone https://github.com/YOUR_GITHUB_ACCOUNT_NAME/typescript-styled-plugin.git
 cd typescript-styled-plugin
 ```
 
@@ -53,7 +53,22 @@ And then run the end to end tests with the `e2e` script:
 npm run e2e
 ```
 
-Please see also our [Code of Conduct](CODE_OF_CONDUCT.md).
+You can submit bug fixes and features through [pull requests](https://help.github.com/articles/about-pull-requests/). To get started, first checkout a new feature branch on your local repo:
+
+```bash
+git checkout -b my-awesome-new-feature-branch
+```
+
+Make the desired code changes, commit them, and then push the changes up to your forked repository:
+
+```bash
+git push origin my-awesome-new-feature-branch
+```
+
+Then [submit a pull request](https://help.github.com/articles/creating-a-pull-request/
+) against the Microsoft typescript-styled-plugin repository.
+
+Please also see our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 
 ## Credits
