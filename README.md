@@ -12,7 +12,7 @@ This plugin requires TypeScript 2.4 or later. It can provide intellisense in bot
 To get started, install the plugin in your workspace:
 
 ```bash
-npm install --save-dev https://github.com/Microsoft/typescript-styled-plugin
+npm install --save-dev typescript-styled-plugin
 ```
 
 Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or [`jsconfig.json`](https://code.visualstudio.com/Docs/languages/javascript#_javascript-project-jsconfigjson)
