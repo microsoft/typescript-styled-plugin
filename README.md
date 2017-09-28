@@ -33,6 +33,8 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 >
 > You can find more information about managing typescript versions [in the VS Code documentation](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions)
 
+If you are using VS Code, also consider installing the [vscode-styled-components](https://marketplace.visualstudio.com/items?itemName=jpoissonnier.vscode-styled-components) extension to get stytax highlighting for styled components.
+
 
 ### Configuration
 
