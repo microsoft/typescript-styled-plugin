@@ -1,19 +1,23 @@
 {
   "name": "typescript-styled-plugin",
   "version": "0.0.1",
-  "description": "TypeScript Language Service Plugin for css",
+  "description": "TypeScript language service plugin that adds IntelliSense for styled components",
   "keywords": [
-    "typescript",
-    "css",
+    "TypeScript",
     "styled",
-    "language service"
+    "styled-components",
+    "styled components",
+    "css"
   ],
   "main": "lib/index.js",
   "author": "Microsoft",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mjbvz/ts-styled-plugin.git"
+    "url": "https://github.com/Microsoft/typescript-styled-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Microsoft/typescript-styled-plugin/issues"
   },
   "dependencies": {
     "vscode-css-languageservice": "^2.1.4"
