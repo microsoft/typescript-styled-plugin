@@ -1,4 +1,4 @@
-# TypeScript Styled Plugin (Prototype)
+# TypeScript Styled Plugin
 
 TypeScript server plugin that adds intellisense to styled component css strings
 
@@ -28,6 +28,172 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
   }
 }
 ```
+
+> **❗️Important**: With VS Code, TypeScript plugins require that you use a [workspace version of TypeScript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions). To do this, first install TypeScript in your workspace by running `npm install typescript` and then run the `Select TypeScript version` command in VS Code to switch to this version for JavaScript and TypeScript language support.
+>
+> You can find more information about managing typescript versions [in the VS Code documentation](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions)
+
+
+### Configuration
+
+To disable error reporting, set `"validate": false` in the plugin configuration:
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin",
+        "validate": false
+      }
+    ]
+  }
+}
+```
+
+You can also configure how errors are reported using linter settings. 
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin",
+        "lint": {
+          "vendorPrefix": "error",
+          "zeroUnits": "ignore"
+        }
+      }
+    ]
+  }
+}
+```
+
+The following lint options are supported:
+
+#### compatibleVendorPrefixes
+```
+"ignore" | "warning" | "error"
+```
+
+When using a vendor-specific prefix make sure to also include all other vendor-specific properties. Default is `"ignore"`.
+
+#### vendorPrefix
+```
+"ignore" | "warning" | "error"
+```
+
+When using a vendor-specific prefix also include the standard property. Default is `"warning"`.
+
+#### duplicateProperties
+```
+"ignore" | "warning" | "error"
+```
+
+Do not use duplicate style definitions. Default is `"ignore"`.
+
+#### emptyRules
+```
+"ignore" | "warning" | "error"
+```
+
+Do not use empty rulesets. Default is `"warning"`.
+
+#### importStatement
+```
+"ignore" | "warning" | "error"
+```
+
+Import statements do not load in parallel. Default is `"ignore"`.
+
+#### boxModel
+```
+"ignore" | "warning" | "error"
+```
+
+Do not use width or height when using padding or border.  Default is `"ignore"`.
+
+#### universalSelector
+```
+"ignore" | "warning" | "error"
+```
+
+The universal selector (*) is known to be slow. Default is `"ignore"`.
+
+#### zeroUnits
+```
+"ignore" | "warning" | "error"
+```
+
+No unit for zero needed. Default is `"ignore"`.
+
+#### fontFaceProperties
+```
+"ignore" | "warning" | "error"
+```
+@font-face rule must define 'src' and 'font-family' properties. Default is `"warning"`.
+
+#### hexColorLength
+```
+"ignore" | "warning" | "error"
+```
+
+Hex colors must consist of three or six hex numbers. Default is `"error"`.
+
+#### argumentsInColorFunction
+```
+"ignore" | "warning" | "error"
+```
+
+Invalid number of parameters. Default is `"error"`.
+
+#### unknownProperties
+```
+"ignore" | "warning" | "error"
+```
+
+Unknown property. Default is `"warning"`.
+
+#### ieHack
+```
+"ignore" | "warning" | "error"
+```
+IE hacks are only necessary when supporting IE7 and older. Default is `"ignore"`.
+
+#### unknownVendorSpecificProperties
+```
+"ignore" | "warning" | "error"
+```
+Unknown vendor specific property. Default is `"ignore"`.
+
+#### propertyIgnoredDueToDisplay
+```
+"ignore" | "warning" | "error"
+```
+
+Property is ignored due to the display. E.g. with 'display: inline', the width, height, margin-top, margin-bottom, and float properties have no effect. Default is `"warning"`
+
+#### important
+```
+"ignore" | "warning" | "error"
+```
+
+Avoid using !important. It is an indication that the specificity of the entire CSS has gotten out of control and needs to be refactored. Default is `"ignore"`.
+
+#### float
+```
+"ignore" | "warning" | "error"
+```
+
+Avoid using 'float'. Floats lead to fragile CSS that is easy to break if one aspect of the layout changes. Default is `"ignore"`.
+
+#### idSelector
+```
+"ignore" | "warning" | "error"
+```
+
+Selectors should not contain IDs because these rules are too tightly coupled with the HTML. Default is `"ignore"`.
+
 
 ## Contributing
 
