@@ -7,12 +7,13 @@ TypeScript server plugin that adds intellisense to [styled component](https://st
 [![Build Status](https://travis-ci.org/Microsoft/typescript-styled-plugin.svg?branch=master)](https://travis-ci.org/Microsoft/typescript-styled-plugin)
 
 ## Usage
-This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Visual Studio](https://www.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), and others. 
+This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), and others. 
 
-To get started, install the plugin in your workspace:
+### With VS Code
+To use this plugin with VS Code, first install the plugin and a copy of TypeScript in your workspace:
 
 ```bash
-npm install --save-dev typescript-styled-plugin
+npm install --save-dev typescript-styled-plugin typescript
 ```
 
 Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or [`jsconfig.json`](https://code.visualstudio.com/Docs/languages/javascript#_javascript-project-jsconfigjson)
@@ -29,14 +30,67 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 }
 ```
 
-> **❗️Important**: With VS Code, TypeScript plugins require that you use a [workspace version of TypeScript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions). To do this, first install TypeScript in your workspace by running `npm install typescript` and then run the `Select TypeScript version` command in VS Code to switch to this version for JavaScript and TypeScript language support.
->
-> You can find more information about managing typescript versions [in the VS Code documentation](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions)
+Finally, run the `Select TypeScript version` command in VS Code to switch to use the workspace version of TypeScript for VS Code's JavaScript and TypeScript language support. You can find more information about managing typescript versions [in the VS Code documentation](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions).
 
-If you are using VS Code, also consider installing the [vscode-styled-components](https://marketplace.visualstudio.com/items?itemName=jpoissonnier.vscode-styled-components) extension to get stytax highlighting for styled components.
+Also consider installing the [vscode-styled-components](https://marketplace.visualstudio.com/items?itemName=jpoissonnier.vscode-styled-components) extension to get stytax highlighting for styled components.
 
 
-### Configuration
+### With Sublime
+This plugin works with the [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin).
+
+First install the plugin and a copy of TypeScript in your workspace:
+
+```bash
+npm install --save-dev typescript-styled-plugin typescript
+```
+
+And configure Sublime to use the workspace version of TypeScript by [setting the `typescript_tsdk`](https://github.com/Microsoft/TypeScript-Sublime-Plugin#note-using-different-versions-of-typescript) setting in Sublime:
+
+```json
+{
+	"typescript_tsdk": "/Users/matb/my-amazing-project/node_modules/typescript/lib"
+}
+```
+
+Finally add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or [`jsconfig.json`](https://code.visualstudio.com/Docs/languages/javascript#_javascript-project-jsconfigjson) and restart Sublime.
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin"
+      }
+    ]
+  }
+}
+```
+
+### With Atom
+This plugin works with the [Atom TypeScript plugin](https://atom.io/packages/atom-typescript).
+
+First install the plugin and a copy of TypeScript in your workspace:
+
+```bash
+npm install --save-dev typescript-styled-plugin typescript
+```
+
+Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or [`jsconfig.json`](https://code.visualstudio.com/Docs/languages/javascript#_javascript-project-jsconfigjson) and restart Atom.
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin"
+      }
+    ]
+  }
+}
+```
+
+
+## Configuration
 
 ### Tags
 This plugin adds styled component IntelliSense to any template literal [tagged](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) with `styled`:
@@ -49,7 +103,7 @@ styled.button`
 `
 ```
 
-You can enable IntelliSense for other tag names by configuring `"tags"`
+You can enable IntelliSense for other tag names by configuring `"tags"`:
 
 ```json
 {
@@ -57,7 +111,10 @@ You can enable IntelliSense for other tag names by configuring `"tags"`
     "plugins": [
       {
         "name": "typescript-styled-plugin",
-        "tags": ["styled", "sty"]
+        "tags": [
+          "styled",
+          "sty"
+        ]
       }
     ]
   }
