@@ -1,6 +1,6 @@
 # TypeScript Styled Plugin
 
-TypeScript server plugin that adds intellisense to styled component css strings
+TypeScript server plugin that adds intellisense to [styled component](https://styled-components.com) css strings
 
 ![](documentation/preview.gif)
 
@@ -37,6 +37,45 @@ If you are using VS Code, also consider installing the [vscode-styled-components
 
 
 ### Configuration
+
+### Tags
+This plugin adds styled component IntelliSense to any template literal [tagged](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) with `styled`:
+
+```js
+import styled from 'styled-components'
+
+styled.button`
+    color: blue;
+`
+```
+
+You can enable IntelliSense for other tag names by configuring `"tags"`
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin",
+        "tags": ["styled", "sty"]
+      }
+    ]
+  }
+}
+```
+
+Now strings tagged with either `styled` or `sty` will have styled component IntelliSense:
+
+```js
+import sty from 'styled-components'
+
+sty.button`
+    color: blue;
+`
+```
+
+
+### Linting
 
 To disable error reporting, set `"validate": false` in the plugin configuration:
 
