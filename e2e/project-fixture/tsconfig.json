@@ -3,7 +3,7 @@
     "target": "es2015",
     "module": "commonjs",
     "plugins": [
-      { "name": "../../../lib", "tag": "css" }
+      { "name": "../../../lib", "tags": ["css"] }
     ]
   }
 }
