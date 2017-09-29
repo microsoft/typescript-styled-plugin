@@ -36,7 +36,7 @@ Also consider installing the [vscode-styled-components](https://marketplace.visu
 
 
 ### With Sublime
-This plugin works with the [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin).
+This plugin works with the [Sublime TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin).
 
 First install the plugin and a copy of TypeScript in your workspace:
 
