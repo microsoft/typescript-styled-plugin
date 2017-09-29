@@ -196,7 +196,7 @@ Do not use duplicate style definitions. Default is `"ignore"`.
 "ignore" | "warning" | "error"
 ```
 
-Do not use empty rulesets. Default is `"warning"`.
+Do not use empty rulesets. Default is `"ignore"`.
 
 #### importStatement
 ```

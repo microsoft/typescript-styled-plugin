@@ -10,7 +10,9 @@ export interface TsStyledPluginConfiguration {
 export const defaultConfiguration: TsStyledPluginConfiguration = {
     tags: ['styled', 'css'],
     validate: true,
-    lint: { }
+    lint: {
+        emptyRules: 'ignore'
+    }
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {

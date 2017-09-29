@@ -28,4 +28,23 @@ describe('Errors', () => {
         });
     });
 
+    it('should return return errors for empty rulesets', () => {
+         const server = createServer();
+        server.send({
+            command: 'open',
+            arguments: {
+                file: './main.ts',
+                fileContent: 'function css(x) { return x; }; const q = css``',
+                scriptKindName: 'TS'
+            }
+        });
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
+
+        return server.close().then(() => {
+            assert.strictEqual(server.responses.length, 3);
+            const errorResponse = server.responses[2];
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 })
