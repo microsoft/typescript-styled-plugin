@@ -28,7 +28,7 @@ describe('Errors', () => {
         });
     });
 
-    it('should return return errors for empty rulesets', () => {
+    it('should not return errors for empty rulesets', () => {
          const server = createServer();
         server.send({
             command: 'open',
@@ -47,4 +47,24 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error for a placeholder in a property', () => {
+        const server = createServer();
+       server.send({
+           command: 'open',
+           arguments: {
+               file: './main.ts',
+               fileContent: 'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`',
+               scriptKindName: 'TS'
+           }
+       });
+       server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
+
+       return server.close().then(() => {
+           assert.strictEqual(server.responses.length, 3);
+           const errorResponse = server.responses[2];
+           assert.isTrue(errorResponse.success);
+           assert.strictEqual(errorResponse.body.length, 0);
+       });
+   });
 })

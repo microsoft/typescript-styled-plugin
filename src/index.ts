@@ -52,7 +52,10 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
 
     const helper = new LanguageServiceScriptSourceHelper(info.languageService);
     const adapter = new StyledStringLanguageService(config);
-    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, logger, config.tags);
+    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, logger, {
+        tags: config.tags,
+        enableForStringWithSubstitutions: true
+    });
 }
 
 export = (mod: { typescript: typeof ts }) => {

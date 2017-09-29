@@ -34,7 +34,7 @@ export function findAllNodes(
     return result;
 }
 
-export function isTagged(node: ts.Node, tags: string[]): boolean {
+export function isTaggedLiteral(node: ts.NoSubstitutionTemplateLiteral, tags: string[]): boolean {
     if (!node || !node.parent) {
         return false;
     }
@@ -42,7 +42,11 @@ export function isTagged(node: ts.Node, tags: string[]): boolean {
         return false;
     }
     const tagNode = node.parent as ts.TaggedTemplateExpression;
-    const text = tagNode.tag.getText();
+    return isTagged(tagNode, tags);
+}
+
+export function isTagged(node: ts.TaggedTemplateExpression, tags: string[]): boolean {
+    const text = node.tag.getText();
     return tags.some(tag =>
         text === tag
         || text.startsWith(tag + '.')
