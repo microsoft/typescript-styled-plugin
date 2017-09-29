@@ -8,8 +8,8 @@ describe('Completeions', () => {
         server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 21, line: 1, prefix: '' } });
 
         return server.close().then(() => {
-            assert.equal(server.responses.length, 3);
-            assert.equal(server.responses[2].body.length, 157);
+            assert.strictEqual(server.responses.length, 3);
+            assert.strictEqual(server.responses[2].body.length, 157);
             assert.isTrue(server.responses[2].body.some(item => item.name === 'aliceblue'));
         });
     });
@@ -20,9 +20,8 @@ describe('Completeions', () => {
         server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 5, line: 1, prefix: '' } });
 
         return server.close().then(() => {
-            console.log(server.responses[2]);
-            assert.equal(server.responses.length, 3);
-            assert.isFalse(server.responses[2].body.some(item => item.name === '-moz-animation'));
+            assert.strictEqual(server.responses.length, 3);
+            assert.isFalse(server.responses[2].success);
         });
     });
 })

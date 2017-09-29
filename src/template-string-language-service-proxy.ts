@@ -190,7 +190,11 @@ class TemplateLanguageServiceProxyBuilder {
         if (!node || node.kind !== ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
             return undefined;
         }
-        if (isTagged(node, this.tags)) {
+        if (!isTagged(node, this.tags)) {
+            return undefined;
+        }
+        // Make sure we are inside the template string
+        if (position > node.pos) {
             return node;
         }
         return undefined;
