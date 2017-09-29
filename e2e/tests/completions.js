@@ -9,8 +9,10 @@ describe('Completeions', () => {
 
         return server.close().then(() => {
             assert.strictEqual(server.responses.length, 3);
-            assert.strictEqual(server.responses[2].body.length, 157);
-            assert.isTrue(server.responses[2].body.some(item => item.name === 'aliceblue'));
+            const completionsResponse = server.responses[2];
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });
 
