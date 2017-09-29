@@ -22,6 +22,9 @@
   "dependencies": {
     "vscode-css-languageservice": "^2.1.4"
   },
+  "files": [
+    "lib"
+  ],
   "devDependencies": {
     "@types/node": "^7.0.22",
     "chai": "^4.1.2",
@@ -36,6 +39,6 @@
   "scripts": {
     "compile": "tsc -p .",
     "watch:compile": "tsc --watch -p .",
-    "e2e": "node e2e/run.js"
+    "e2e": "./node_modules/.bin/mocha e2e/tests"
   }
 }
