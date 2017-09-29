@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
 
-describe('Completeions', () => {
+describe('Completions', () => {
     it('should return property value completions single line string', () => {
         const server = createServer();
         server.send({ command: 'open', arguments: { file: './main.ts', fileContent: 'const q = css`color:`', scriptKindName: 'TS' } });
@@ -50,4 +50,6 @@ describe('Completeions', () => {
             assert.isFalse(server.responses[2].success);
         });
     });
+
+    
 })
