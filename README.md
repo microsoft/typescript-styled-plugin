@@ -93,7 +93,7 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 ## Configuration
 
 ### Tags
-This plugin adds styled component IntelliSense to any template literal [tagged](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) with `styled`:
+This plugin adds styled component IntelliSense to any template literal [tagged](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) with `styled` or `css`:
 
 ```js
 import styled from 'styled-components'
@@ -113,6 +113,7 @@ You can enable IntelliSense for other tag names by configuring `"tags"`:
         "name": "typescript-styled-plugin",
         "tags": [
           "styled",
+          "css",
           "sty"
         ]
       }
@@ -121,7 +122,7 @@ You can enable IntelliSense for other tag names by configuring `"tags"`:
 }
 ```
 
-Now strings tagged with either `styled` or `sty` will have styled component IntelliSense:
+Now strings tagged with either `styled`, `css`, or `sty` will have styled component IntelliSense:
 
 ```js
 import sty from 'styled-components'

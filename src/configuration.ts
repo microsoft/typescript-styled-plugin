@@ -8,7 +8,7 @@ export interface TsStyledPluginConfiguration {
 }
 
 export const defaultConfiguration: TsStyledPluginConfiguration = {
-    tags: ['styled'],
+    tags: ['styled', 'css'],
     validate: true,
     lint: { }
 };
