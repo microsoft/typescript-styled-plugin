@@ -62,7 +62,7 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
         ): string {
             const placeholder = templateString.slice(start, end);
             const pre = templateString.slice(0, start);
-            const replacementChar = pre.match(/^\s*$/g) ? ' ' : 'x';
+            const replacementChar = pre.match(/^\s*$/gm) ? ' ' : 'x';
             return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
         }
     });

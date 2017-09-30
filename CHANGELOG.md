@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.4 - September 29, 2017
+- Fix multiline strings with placeholders.
+
 ## 0.0.3 - September 29, 2017
 - Initial support for strings with placeholders.
 
