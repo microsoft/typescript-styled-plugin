@@ -193,16 +193,30 @@ class TemplateLanguageServiceProxyBuilder {
     }
 
     private getTemplateNode(fileName: string, position: number): ts.TemplateLiteral | undefined {
-        const node = this.getValidTemplateNode(this.helper.getNode(fileName, position))
+        const node = this.getValidTemplateNode(this.helper.getNode(fileName, position));
         if (!node) {
             return undefined;
         }
+        this.logger.log('kind ' + node.kind)
 
         // Make sure we are inside the template string
-        if (position > node.pos) {
-            return node;
+        if (position <= node.pos) {
+            return undefined;
         }
-        return undefined;
+
+        // Make sure we are not inside of a placeholder
+        if (node.kind === ts.SyntaxKind.TemplateExpression) {
+
+            let start = node.head.end;
+            for (const child of node.templateSpans.map(x => x.literal)) {
+                const nextStart = child.getStart();
+                if (position >= start && position <= nextStart) {
+                    return undefined;
+                }
+                start = child.getEnd();
+            }
+        }
+        return node;
     }
 
     private getAllTemplateNodes(fileName: string): ts.TemplateExpression[] {
@@ -267,7 +281,6 @@ class TemplateLanguageServiceProxyBuilder {
             contents = contents.substr(0, nodeStart) + 'x'.repeat(start - nodeStart) + contents.substr(start);
             nodeStart = child.getEnd() - stringStart - 2;
         }
-        this.logger.log(contents);
         return contents;
     }
 
