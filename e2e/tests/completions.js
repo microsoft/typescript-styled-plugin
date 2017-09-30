@@ -115,6 +115,27 @@ describe('Completions', () => {
         });
     });
 
+
+    it('should return completions on tagged template string with placeholder using dotted tag', () => {
+        const server = createServer();
+        server.send({
+            command: 'open',
+            arguments: {
+                file: './main.ts',
+                fileContent: 'css.x`color: ; boarder: 1px solid ${"red"};`',
+                scriptKindName: 'TS'
+            }
+        });
+        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 13, line: 1, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
+
     it('should return js completions inside placeholder', () => {
         const server = createServer();
         server.send({
@@ -150,6 +171,25 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.isTrue(completionsResponse.body.some(item => item.name === 'substr'));
+        });
+    });
+
+    it('should return stylde completions inside of nested placeholder', () => {
+        const server = createServer();
+        server.send({
+            command: 'open',
+            arguments: {
+                file: './main.ts',
+                fileContent: 'styled`background: red; ${(() => css`color:`)()}`;',
+                scriptKindName: 'TS'
+            }
+        });
+        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 44, line: 1, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });
 })

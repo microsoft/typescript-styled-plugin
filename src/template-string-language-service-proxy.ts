@@ -115,10 +115,9 @@ class TemplateLanguageServiceProxyBuilder {
                 (fileName: string, position: number) => {
                     const node = this.getTemplateNode(fileName, position);
                     if (!node) {
-                        this.logger.log('-------');
-
                         return delegate(fileName, position);
                     }
+
                     const contents = this.getContents(node);
                     return call.call(templateStringService,
                         contents,
@@ -206,7 +205,6 @@ class TemplateLanguageServiceProxyBuilder {
 
         // Make sure we are not inside of a placeholder
         if (node.kind === ts.SyntaxKind.TemplateExpression) {
-
             let start = node.head.end;
             for (const child of node.templateSpans.map(x => x.literal)) {
                 const nextStart = child.getStart();
@@ -216,6 +214,7 @@ class TemplateLanguageServiceProxyBuilder {
                 start = child.getEnd();
             }
         }
+
         return node;
     }
 
@@ -230,17 +229,6 @@ class TemplateLanguageServiceProxyBuilder {
             return undefined;
         }
         switch (node.kind) {
-            case ts.SyntaxKind.TemplateExpression:
-                const parent = this.helper.getNode(node.getSourceFile().fileName, node.getStart() - 1);
-                if (!parent) {
-                    return undefined;
-                }
-                const text = parent.getText();
-                if (this.templateStringSettings.tags.some(tag => text === tag || text.startsWith(tag + '.'))) {
-                    return node as ts.TemplateExpression;
-                }
-                return undefined;
-
             case ts.SyntaxKind.TaggedTemplateExpression:
                 if (isTagged(node as ts.TaggedTemplateExpression, this.templateStringSettings.tags)) {
                     return (node as ts.TaggedTemplateExpression).template;
@@ -254,14 +242,17 @@ class TemplateLanguageServiceProxyBuilder {
                 return undefined;
 
             case ts.SyntaxKind.TemplateHead:
-                if (!this.templateStringSettings.enableForStringWithSubstitutions || !node.parent) {
+                if (!this.templateStringSettings.enableForStringWithSubstitutions || !node.parent || !node.parent.parent) {
                     return undefined;
                 }
-                return this.getValidTemplateNode(node.parent);
+                return this.getValidTemplateNode(node.parent.parent);
 
             case ts.SyntaxKind.TemplateMiddle:
             case ts.SyntaxKind.TemplateTail:
-                return node.parent && this.getValidTemplateNode(node.parent.parent);
+                if (!this.templateStringSettings.enableForStringWithSubstitutions || !node.parent || !node.parent.parent) {
+                    return undefined;
+                }
+                return this.getValidTemplateNode(node.parent.parent.parent);
 
             default:
                 return undefined;
