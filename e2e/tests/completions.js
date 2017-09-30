@@ -1,17 +1,33 @@
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
 
+const mockFileName = 'main.ts';
+
+const openMockFile = (server, fileContent) => {
+    server.send({
+        command: 'open',
+        arguments: {
+            file: mockFileName,
+            fileContent,
+            scriptKindName: 'TS'
+        }
+    });
+    return server;
+};
+
+
 const getFirstResponseOfType = (command, server) => {
     const response = server.responses.find(response => response.command === command);
     assert.isTrue(response !== undefined);
     return response;
-}
+};
+
 
 describe('Completions', () => {
     it('should return property value completions single line string', () => {
         const server = createServer();
-        server.send({ command: 'open', arguments: { file: './main.ts', fileContent: 'const q = css`color:`', scriptKindName: 'TS' } });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 21, line: 1, prefix: '' } });
+        openMockFile(server, 'const q = css`color:`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -23,18 +39,12 @@ describe('Completions', () => {
 
     it('should return property value completions for multiline string', () => {
         const server = createServer();
-        server.send({
-            command: 'open', arguments: {
-                file: './main.ts',
-                fileContent: [
-                    'const q = css`',
-                    'color:',
-                    '`'
-                ].join('\n'),
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 22, line: 1, prefix: '' } });
+        openMockFile(server, [
+            'const q = css`',
+            'color:',
+            '`'
+        ].join('\n'));
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 22, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -46,8 +56,8 @@ describe('Completions', () => {
 
     it('should not return css completions on tag', () => {
         const server = createServer();
-        server.send({ command: 'open', arguments: { file: './main.ts', fileContent: 'css.``', scriptKindName: 'TS' } });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 5, line: 1, prefix: '' } });
+        openMockFile(server, 'css.``');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 5, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -57,15 +67,8 @@ describe('Completions', () => {
 
     it('should return completions before where placeholder is used as property', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'css`color: ; boarder: 1px solid ${"red"};`',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 11, line: 1, prefix: '' } });
+        openMockFile(server, 'css`color: ; boarder: 1px solid ${"red"};`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 11, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -77,15 +80,8 @@ describe('Completions', () => {
 
     it('should return completions after where placeholder is used as property', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'css`boarder: 1px solid ${"red"}; color:`',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 40, line: 1, prefix: '' } });
+        openMockFile(server, 'css`boarder: 1px solid ${"red"}; color:`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 40, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -97,15 +93,8 @@ describe('Completions', () => {
 
     it('should return completions between were placeholders are used as properties', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 40, line: 1, prefix: '' } });
+        openMockFile(server, 'css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `')
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 40, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -115,18 +104,10 @@ describe('Completions', () => {
         });
     });
 
-
     it('should return completions on tagged template string with placeholder using dotted tag', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'css.x`color: ; boarder: 1px solid ${"red"};`',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 13, line: 1, prefix: '' } });
+        openMockFile(server, 'css.x`color: ; boarder: 1px solid ${"red"};`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 13, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -138,15 +119,8 @@ describe('Completions', () => {
 
     it('should return js completions inside placeholder', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'const abc = 123; css`color: ${};`',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 31, line: 1, prefix: '' } });
+        openMockFile(server, 'const abc = 123; css`color: ${};`')
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 31, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -157,15 +131,8 @@ describe('Completions', () => {
 
     it('should return js completions at end of placeholder', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'css`color: ${"red".};`',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 20, line: 1, prefix: '' } });
+        openMockFile(server, 'css`color: ${"red".};`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 20, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -176,15 +143,8 @@ describe('Completions', () => {
 
     it('should return stylde completions inside of nested placeholder', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'styled`background: red; ${(() => css`color:`)()}`;',
-                scriptKindName: 'TS'
-            }
-        });
-        server.send({ command: 'completions', arguments: { file: 'main.ts', offset: 44, line: 1, prefix: '' } });
+        openMockFile(server, 'styled`background: red; ${(() => css`color:`)()}`;');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 44, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
