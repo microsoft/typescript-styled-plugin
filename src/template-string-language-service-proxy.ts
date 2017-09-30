@@ -97,6 +97,8 @@ export interface TemplateStringLanguageService {
 export interface TemplateStringSettings {
     readonly tags: string[];
     readonly enableForStringWithSubstitutions?: boolean;
+
+    getSubstitution?(templateString: string, start: number, end: number): string;
 }
 
 class TemplateLanguageServiceProxyBuilder {
@@ -196,7 +198,6 @@ class TemplateLanguageServiceProxyBuilder {
         if (!node) {
             return undefined;
         }
-        this.logger.log('kind ' + node.kind)
 
         // Make sure we are inside the template string
         if (position <= node.pos) {
@@ -260,18 +261,20 @@ class TemplateLanguageServiceProxyBuilder {
     }
 
     private getContents(node: ts.TemplateLiteral): string {
-        let contents = node.getText().slice(1, -1);
+        const literalContents = node.getText().slice(1, -1);
         if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-            return contents;
+            return literalContents;
         }
 
         const stringStart = node.getStart() + 1;
+        let contents = literalContents; 
         let nodeStart = node.head.end - stringStart - 2;
         for (const child of node.templateSpans.map(x => x.literal)) {
             const start = child.getStart() - stringStart + 1;
-            contents = contents.substr(0, nodeStart) + 'x'.repeat(start - nodeStart) + contents.substr(start);
+            contents = contents.substr(0, nodeStart) + this.getSubstitution(literalContents, nodeStart, start) + contents.substr(start);
             nodeStart = child.getEnd() - stringStart - 2;
         }
+        this.logger.log(contents);
         return contents;
     }
 
@@ -295,6 +298,17 @@ class TemplateLanguageServiceProxyBuilder {
             }
         }
         return [...baseDiagnostics, ...templateDiagnostics];
+    }
+
+    private getSubstitution(
+        templateString: string,
+        start: number,
+        end: number
+    ): string {
+        if (this.templateStringSettings.getSubstitution) {
+            return this.templateStringSettings.getSubstitution(templateString, start, end);
+        }
+        return 'x'.repeat(end - start);
     }
 }
 

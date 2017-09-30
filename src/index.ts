@@ -54,7 +54,17 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const adapter = new StyledStringLanguageService(config);
     return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, logger, {
         tags: config.tags,
-        enableForStringWithSubstitutions: true
+        enableForStringWithSubstitutions: true,
+        getSubstitution(
+            templateString: string,
+            start: number,
+            end: number
+        ): string {
+            const placeholder = templateString.slice(start, end);
+            const pre = templateString.slice(0, start);
+            const replacementChar = pre.match(/^\s*$/g) ? ' ' : 'x';
+            return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+        }
     });
 }
 

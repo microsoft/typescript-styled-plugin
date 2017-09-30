@@ -80,8 +80,8 @@ describe('Completions', () => {
 
     it('should return completions after where placeholder is used as property', () => {
         const server = createServer();
-        openMockFile(server, 'css`boarder: 1px solid ${"red"}; color:`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 40, line: 1, prefix: '' } });
+        openMockFile(server, 'css`border: 1px solid ${"red"}; color:`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 39, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -141,10 +141,42 @@ describe('Completions', () => {
         });
     });
 
-    it('should return stylde completions inside of nested placeholder', () => {
+    it('should return styled completions inside of nested placeholder', () => {
         const server = createServer();
         openMockFile(server, 'styled`background: red; ${(() => css`color:`)()}`;');
         server.send({ command: 'completions', arguments: { file: mockFileName, offset: 44, line: 1, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
+
+    it('should handle multiline value placeholder correctly ', () => {
+        const server = createServer();
+        openMockFile(server, [
+            'css`margin: ${',
+            '0',
+            "}; color: `"].join('\n'));
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 10, line: 3, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
+
+    it('should handle multiline rule placeholder correctly ', () => {
+        const server = createServer();
+        openMockFile(server, [
+            'css`',
+            '${',
+            'css`margin: 0;`',
+            '}',
+            'color: `'].join('\n'));
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 8, line: 5, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
