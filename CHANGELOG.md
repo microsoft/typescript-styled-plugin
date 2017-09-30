@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.5 - September 29, 2017
+- Fix empty value error being showing when using placeholder for value in multiline template strings.
+
 ## 0.0.4 - September 29, 2017
 - Fix multiline strings with placeholders.
 

@@ -1,17 +1,13 @@
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
+const { openMockFile } = require('./_helpers');
+
+const mockFileName = 'main.ts';
 
 describe('Errors', () => {
     it('should return error for unknown property', () => {
         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'function css(x) { return x; }; const q = css`boarder: 1px solid black;`',
-                scriptKindName: 'TS'
-            }
-        });
+        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css`boarder: 1px solid black;`');
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
 
         return server.close().then(() => {
@@ -29,15 +25,8 @@ describe('Errors', () => {
     });
 
     it('should not return errors for empty rulesets', () => {
-         const server = createServer();
-        server.send({
-            command: 'open',
-            arguments: {
-                file: './main.ts',
-                fileContent: 'function css(x) { return x; }; const q = css``',
-                scriptKindName: 'TS'
-            }
-        });
+        const server = createServer();
+        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css``');
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
 
         return server.close().then(() => {
@@ -50,21 +39,30 @@ describe('Errors', () => {
 
     it('should not return an error for a placeholder in a property', () => {
         const server = createServer();
-       server.send({
-           command: 'open',
-           arguments: {
-               file: './main.ts',
-               fileContent: 'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`',
-               scriptKindName: 'TS'
-           }
-       });
-       server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
+        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`')
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
 
-       return server.close().then(() => {
-           assert.strictEqual(server.responses.length, 3);
-           const errorResponse = server.responses[2];
-           assert.isTrue(errorResponse.success);
-           assert.strictEqual(errorResponse.body.length, 0);
-       });
-   });
+        return server.close().then(() => {
+            assert.strictEqual(server.responses.length, 3);
+            const errorResponse = server.responses[2];
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+    it('should not return an error for a placeholder in a property with a multiline string', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, [
+            'function css(strings, ...) { return ""; }; const q = css`',
+            '    color: ${"red"};',
+            '`'].join('\n'));
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
+
+        return server.close().then(() => {
+            assert.strictEqual(server.responses.length, 3);
+            const errorResponse = server.responses[2];
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 })
