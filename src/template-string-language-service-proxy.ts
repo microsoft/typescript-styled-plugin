@@ -274,7 +274,6 @@ class TemplateLanguageServiceProxyBuilder {
             contents = contents.substr(0, nodeStart) + this.getSubstitution(literalContents, nodeStart, start) + contents.substr(start);
             nodeStart = child.getEnd() - stringStart - 2;
         }
-        this.logger.log(contents);
         return contents;
     }
 
