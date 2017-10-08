@@ -31,14 +31,14 @@
     "glob": "^7.1.2",
     "mocha": "^3.5.3",
     "tslint": "^5.3.2",
-    "typescript": "^2.5.2"
+    "typescript": "^2.5.3"
   },
   "peerDependencies": {
     "typescript": "^2.3.0"
   },
   "scripts": {
-    "compile": "tsc -p .",
-    "watch:compile": "tsc --watch -p .",
+    "compile": "./node_modules/.bin/tsc -p .",
+    "watch:compile": "./node_modules/.bin/tsc --watch -p .",
     "e2e": "./node_modules/.bin/mocha e2e/tests"
   }
 }
