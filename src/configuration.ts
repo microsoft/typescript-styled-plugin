@@ -8,11 +8,11 @@ export interface TsStyledPluginConfiguration {
 }
 
 export const defaultConfiguration: TsStyledPluginConfiguration = {
-    tags: ['styled', 'css'],
+    tags: ['styled', 'css', 'extend'],
     validate: true,
     lint: {
-        emptyRules: 'ignore'
-    }
+        emptyRules: 'ignore',
+    },
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
@@ -20,6 +20,6 @@ export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
     return {
         tags: config.tags || defaultConfiguration.tags,
         validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
-        lint
+        lint,
     };
-}
+};
