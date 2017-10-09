@@ -50,5 +50,6 @@ export function isTagged(node: ts.TaggedTemplateExpression, tags: string[]): boo
     return tags.some(tag =>
         text === tag
         || text.startsWith(tag + '.')
+        || text.endsWith('.' + tag)
         || text.startsWith(tag + '('));
 }
