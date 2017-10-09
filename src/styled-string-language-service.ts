@@ -4,7 +4,7 @@
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
+import { getSCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import * as vscode from 'vscode-languageserver-types';
 import { TemplateContext, TemplateStringLanguageService } from './template-string-language-service-proxy';
 import * as config from './config';
@@ -23,7 +23,7 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
 
     private get languageService(): LanguageService {
         if (!this._languageService) {
-            this._languageService = getCSSLanguageService();
+            this._languageService = getSCSSLanguageService();
             this._languageService.configure(this.configuration);
         }
         return this._languageService;
@@ -73,8 +73,8 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
     ): vscode.TextDocument {
         contents = `${wrapperPre}${contents}}`;
         return {
-            uri: 'untitled://embedded.css',
-            languageId: 'css',
+            uri: 'untitled://embedded.scss',
+            languageId: 'scss',
             version: 1,
             getText: () => contents,
             positionAt: (offset: number) => {
