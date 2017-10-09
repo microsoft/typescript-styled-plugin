@@ -37,6 +37,19 @@ describe('Errors', () => {
         });
     });
 
+    it('should not return errors for nested rulesets', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css`&:hover { border: 1px solid black; }`');
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: 'main.ts' } });
+
+        return server.close().then(() => {
+            assert.strictEqual(server.responses.length, 3);
+            const errorResponse = server.responses[2];
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
     it('should not return an error for a placeholder in a property', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`')
