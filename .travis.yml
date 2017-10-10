@@ -18,4 +18,5 @@ install:
   - (cd e2e ; npm install)
 
 script:
+  - npm run compile
   - npm run e2e
