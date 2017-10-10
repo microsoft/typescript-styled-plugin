@@ -1,19 +1,27 @@
 const { fork } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 const readline = require('readline');
 
 class TSServer {
     constructor() {
+        const logfile = path.join(__dirname, 'log.txt');
         const tsserverPath = path.join(__dirname, '..', 'node_modules', 'typescript', 'lib', 'tsserver');
         const server = fork(tsserverPath, [
             '--logVerbosity', 'verbose',
-            '--logFile', path.join(__dirname, 'log.txt')
+            '--logFile', logfile
         ], {
                 cwd: path.join(__dirname, '..', 'project-fixture'),
                 stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
             });
         this._exitPromise = new Promise((resolve, reject) => {
-            server.on('exit', code => resolve(code));
+            server.on('exit', code => {
+                try {
+                    console.log(fs.readFileSync(logfile, 'utf8'));
+                } finally {
+                    resolve(code);
+                }
+            });
             server.on('error', reason => reject(reason));
         });
         server.stdout.setEncoding('utf-8');
