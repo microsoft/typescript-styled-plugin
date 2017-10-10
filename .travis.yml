@@ -16,3 +16,6 @@ install:
 script:
   - npm run compile
   - npm run e2e
+
+after_failure:
+  - cat e2e/server-fixture/log.txt
