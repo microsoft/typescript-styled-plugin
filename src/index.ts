@@ -4,35 +4,10 @@
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
 import * as ts from 'typescript/lib/tsserverlibrary';
-import StyledStringLanguageService from './styled-string-language-service';
-import { createTemplateStringLanguageServiceProxy, ScriptSourceHelper } from './template-string-language-service-proxy';
-import { findAllNodes, findNode } from './nodes';
+import StyledTemplateLanguageService from './styled-template-language-service';
+import { decorateWithTemplateLanguageService, Logger } from 'typescript-template-language-service-decorator';
 import { pluginName } from './config';
 import { loadConfiguration } from './configuration';
-import Logger from './logger';
-
-class LanguageServiceScriptSourceHelper implements ScriptSourceHelper {
-    constructor(
-        private readonly languageService: ts.LanguageService
-    ) { }
-
-    public getNode(fileName: string, position: number) {
-        return findNode(this.languageService.getProgram().getSourceFile(fileName), position);
-    }
-    public getAllNodes(fileName: string, cond: (n: ts.Node) => boolean) {
-        const s = this.languageService.getProgram().getSourceFile(fileName);
-        return findAllNodes(s, cond);
-    }
-    public getLineAndChar(fileName: string, position: number) {
-        const s = this.languageService.getProgram().getSourceFile(fileName);
-        return ts.getLineAndCharacterOfPosition(s, position);
-    }
-
-    public getOffset(fileName: string, line: number, character: number) {
-        const s = this.languageService.getProgram().getSourceFile(fileName);
-        return ts.getPositionOfLineAndCharacter(s, line, character);
-    }
-}
 
 class LanguageServiceLogger implements Logger {
     constructor(
@@ -50,9 +25,7 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
 
     logger.log('config: ' + JSON.stringify(config));
 
-    const helper = new LanguageServiceScriptSourceHelper(info.languageService);
-    const adapter = new StyledStringLanguageService(config);
-    return createTemplateStringLanguageServiceProxy(info.languageService, helper, adapter, logger, {
+    return decorateWithTemplateLanguageService(info.languageService, new StyledTemplateLanguageService(config), {
         tags: config.tags,
         enableForStringWithSubstitutions: true,
         getSubstitution(
@@ -65,7 +38,7 @@ function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
             const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
             return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
         },
-    });
+    }, { logger });
 }
 
 export = (mod: { typescript: typeof ts }) => {

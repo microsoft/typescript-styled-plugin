@@ -6,13 +6,13 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
 import { getSCSSLanguageService, getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import * as vscode from 'vscode-languageserver-types';
-import { TemplateContext, TemplateStringLanguageService } from './template-string-language-service-proxy';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
+import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator';
 
 const wrapperPre = ':root{\n';
 
-export default class VscodeLanguageServiceAdapter implements TemplateStringLanguageService {
+export default class StyledTemplateLanguageService implements TemplateLanguageService {
 
     private _cssLanguageService?: LanguageService;
     private _scssLanguageService?: LanguageService;
@@ -38,22 +38,20 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
     }
 
     public getCompletionsAtPosition(
-        contents: string,
-        position: ts.LineAndCharacter,
-        context: TemplateContext
+        context: TemplateContext,
+        position: ts.LineAndCharacter
     ): ts.CompletionInfo {
-        const doc = this.createVirtualDocument(contents, context);
+        const doc = this.createVirtualDocument(context);
         const stylesheet = this.cssLanguageService.parseStylesheet(doc);
         const items = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
         return translateCompletionItems(items);
     }
 
     public getQuickInfoAtPosition(
-        contents: string,
-        position: ts.LineAndCharacter,
-        context: TemplateContext
+        context: TemplateContext,
+        position: ts.LineAndCharacter
     ): ts.QuickInfo | undefined {
-        const doc = this.createVirtualDocument(contents, context);
+        const doc = this.createVirtualDocument(context);
         const stylesheet = this.cssLanguageService.parseStylesheet(doc);
         const hover = this.cssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
         if (hover) {
@@ -63,23 +61,21 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
     }
 
     public getSemanticDiagnostics(
-        contents: string,
         context: TemplateContext
     ): ts.Diagnostic[] {
-        const doc = this.createVirtualDocument(contents, context);
+        const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         return this.translateDiagnostics(
             this.scssLanguageService.doValidation(doc, stylesheet),
             doc,
             context,
-        contents).filter(x => !!x) as ts.Diagnostic[];
+            context.text).filter(x => !!x) as ts.Diagnostic[];
     }
 
     private createVirtualDocument(
-        contents: string,
         context: TemplateContext
     ): vscode.TextDocument {
-        contents = `${wrapperPre}${contents}\n}`;
+        const contents = `${wrapperPre}${context.text}\n}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',

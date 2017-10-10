@@ -4,7 +4,7 @@
 export interface TsStyledPluginConfiguration {
     tags: string[];
     validate: boolean;
-    lint: { [ key: string ]: any };
+    lint: { [key: string]: any };
 }
 
 export const defaultConfiguration: TsStyledPluginConfiguration = {
