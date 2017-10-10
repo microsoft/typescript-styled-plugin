@@ -4,7 +4,7 @@
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getSCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
+import { getSCSSLanguageService, getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import * as vscode from 'vscode-languageserver-types';
 import { TemplateContext, TemplateStringLanguageService } from './template-string-language-service-proxy';
 import * as config from './config';
@@ -14,18 +14,27 @@ const wrapperPre = ':root{\n';
 
 export default class VscodeLanguageServiceAdapter implements TemplateStringLanguageService {
 
-    private _languageService?: LanguageService;
+    private _cssLanguageService?: LanguageService;
+    private _scssLanguageService?: LanguageService;
 
     constructor(
         private readonly configuration: TsStyledPluginConfiguration
     ) { }
 
-    private get languageService(): LanguageService {
-        if (!this._languageService) {
-            this._languageService = getSCSSLanguageService();
-            this._languageService.configure(this.configuration);
+    private get cssLanguageService(): LanguageService {
+        if (!this._cssLanguageService) {
+            this._cssLanguageService = getCSSLanguageService();
+            this._cssLanguageService.configure(this.configuration);
         }
-        return this._languageService;
+        return this._cssLanguageService;
+    }
+
+    private get scssLanguageService(): LanguageService {
+        if (!this._scssLanguageService) {
+            this._scssLanguageService = getSCSSLanguageService();
+            this._scssLanguageService.configure(this.configuration);
+        }
+        return this._scssLanguageService;
     }
 
     public getCompletionsAtPosition(
@@ -34,8 +43,8 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
         context: TemplateContext
     ): ts.CompletionInfo {
         const doc = this.createVirtualDocument(contents, context);
-        const stylesheet = this.languageService.parseStylesheet(doc);
-        const items = this.languageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
+        const items = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
         return translateCompletionItems(items);
     }
 
@@ -45,8 +54,8 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
         context: TemplateContext
     ): ts.QuickInfo | undefined {
         const doc = this.createVirtualDocument(contents, context);
-        const stylesheet = this.languageService.parseStylesheet(doc);
-        const hover = this.languageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
+        const hover = this.cssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
         if (hover) {
             return this.translateHover(hover, this.toVirtualDocPosition(position), context);
         }
@@ -58,9 +67,9 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
         context: TemplateContext
     ): ts.Diagnostic[] {
         const doc = this.createVirtualDocument(contents, context);
-        const stylesheet = this.languageService.parseStylesheet(doc);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         return this.translateDiagnostics(
-            this.languageService.doValidation(doc, stylesheet),
+            this.scssLanguageService.doValidation(doc, stylesheet),
             doc,
             context);
     }
