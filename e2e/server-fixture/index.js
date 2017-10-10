@@ -15,13 +15,7 @@ class TSServer {
                 stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
             });
         this._exitPromise = new Promise((resolve, reject) => {
-            server.on('exit', code => {
-                try {
-                    console.log(fs.readFileSync(logfile, 'utf8'));
-                } finally {
-                    resolve(code);
-                }
-            });
+            server.on('exit', code => resolve(code));
             server.on('error', reason => reject(reason));
         });
         server.stdout.setEncoding('utf-8');

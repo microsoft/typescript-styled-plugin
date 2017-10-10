@@ -9,10 +9,6 @@ branches:
   only:
   - master
 
-cache:
-  directories:
-    - node_modules
-
 install:
   - npm install
   - (cd e2e ; npm install)
