@@ -322,6 +322,7 @@ npm run compile
 And then run the end to end tests with the `e2e` script:
 
 ```bash
+(cd e2e && npm install)
 npm run e2e
 ```
 
