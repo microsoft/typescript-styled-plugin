@@ -9,3 +9,10 @@ exports.openMockFile = (server, mockFileName, fileContent) => {
     });
     return server;
 };
+
+
+exports.getFirstResponseOfType = (command, server) => {
+    const response = server.responses.find(response => response.command === command);
+    assert.isTrue(response !== undefined);
+    return response;
+};

@@ -1,8 +1,9 @@
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
-const { openMockFile } = require('./_helpers');
+const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
 const mockFileName = 'main.ts';
+
 
 describe('Errors', () => {
     it('should return error for unknown property', () => {
@@ -11,8 +12,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            assert.strictEqual(server.responses.length, 3);
-            const errorResponse = server.responses[2];
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
@@ -30,8 +30,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            assert.strictEqual(server.responses.length, 3);
-            const errorResponse = server.responses[2];
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -43,8 +42,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            assert.strictEqual(server.responses.length, 3);
-            const errorResponse = server.responses[2];
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -56,8 +54,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            assert.strictEqual(server.responses.length, 3);
-            const errorResponse = server.responses[2];
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -72,8 +69,20 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            assert.strictEqual(server.responses.length, 3);
-            const errorResponse = server.responses[2];
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+    it('should return errors for invalid text', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`@@ ; @erer ;`')
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            console.log(errorResponse)
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });

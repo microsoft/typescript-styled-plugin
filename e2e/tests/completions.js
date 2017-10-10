@@ -1,15 +1,8 @@
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
-const { openMockFile } = require('./_helpers');
+const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
 const mockFileName = 'main.ts';
-
-const getFirstResponseOfType = (command, server) => {
-    const response = server.responses.find(response => response.command === command);
-    assert.isTrue(response !== undefined);
-    return response;
-};
-
 
 describe('Completions', () => {
     it('should return property value completions single line string', () => {
