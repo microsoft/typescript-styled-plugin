@@ -134,6 +134,19 @@ sty.button`
 `
 ```
 
+Tags also apply to methods on styled components. This is enabled for `extend` by default:
+
+```js
+import sty from 'styled-components'
+
+const BlueButton = sty.button`
+    color: blue;
+`
+
+const MyFancyBlueButton = BlueButton.extend`
+    border: 10px solid hotpink;
+`
+```
 
 ### Linting
 
