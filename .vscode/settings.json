@@ -5,6 +5,7 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "lib": true
+        "lib": true, 
+        "**/*.log": true
     }
 }
