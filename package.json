@@ -20,7 +20,8 @@
     "url": "https://github.com/Microsoft/typescript-styled-plugin/issues"
   },
   "dependencies": {
-    "vscode-css-languageservice": "^2.1.10"
+    "vscode-css-languageservice": "^2.1.10",
+    "vscode-languageserver-types": "^3.4.0"
   },
   "files": [
     "lib"
