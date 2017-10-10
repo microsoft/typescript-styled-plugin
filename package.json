@@ -41,6 +41,6 @@
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",
     "watch:compile": "./node_modules/.bin/tsc --watch -p .",
-    "e2e": "./node_modules/.bin/mocha e2e/tests"
+    "e2e": "./node_modules/.bin/mocha e2e/tests --slow 2000 --timeout 10000"
   }
 }
