@@ -12,7 +12,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
@@ -30,7 +30,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -42,7 +42,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -54,7 +54,7 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -69,22 +69,27 @@ describe('Errors', () => {
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
-    it('should return errors for invalid text', () => {
+    it('should return errors when error occures in last position', () => {
         const server = createServer();
-        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`@@ ; @erer ;`')
+        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`;`')
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server.responses);
-            console.log(errorResponse)
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
-            assert.strictEqual(errorResponse.body.length, 0);
+            assert.strictEqual(errorResponse.body.length, 1);
+            const error = errorResponse.body[0];
+            assert.strictEqual(error.text, '} expected');
+            assert.strictEqual(error.start.line, 1);
+            assert.strictEqual(error.start.offset, 58);
+            assert.strictEqual(error.end.line, 1);
+            assert.strictEqual(error.end.offset, 59);
         });
     });
 })

@@ -216,10 +216,15 @@ class TemplateLanguageServiceProxyBuilder {
         return node;
     }
 
-    private getAllTemplateNodes(fileName: string): ts.TemplateExpression[] {
-        return this.helper
-            .getAllNodes(fileName, node => this.getValidTemplateNode(node) !== undefined)
-            .map(node => this.getValidTemplateNode(node) as ts.TemplateExpression);
+    private getAllValidTemplateNodes(fileName: string): ts.TemplateLiteral[] {
+        const out: ts.TemplateLiteral[] = [];
+        for (const node of this.helper.getAllNodes(fileName, n => this.getValidTemplateNode(n) !== undefined)) {
+            const validNode = this.getValidTemplateNode(node);
+            if (validNode) {
+                out.push(validNode);
+            }
+        }
+        return out;
     }
 
     private getValidTemplateNode(node: ts.Node | undefined): ts.TemplateLiteral | undefined {
@@ -281,7 +286,7 @@ class TemplateLanguageServiceProxyBuilder {
     ) {
         const baseDiagnostics = delegate(fileName);
         const templateDiagnostics: ts.Diagnostic[] = [];
-        for (const templateNode of this.getAllTemplateNodes(fileName)) {
+        for (const templateNode of this.getAllValidTemplateNodes(fileName)) {
             const contents = this.getContents(templateNode);
             const diagnostics: ts.Diagnostic[] = implementation(
                 contents,

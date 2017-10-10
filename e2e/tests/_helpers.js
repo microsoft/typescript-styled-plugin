@@ -1,3 +1,5 @@
+const assert = require('chai').assert;
+
 exports.openMockFile = (server, mockFileName, fileContent) => {
     server.send({
         command: 'open',

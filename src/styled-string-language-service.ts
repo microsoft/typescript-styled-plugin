@@ -71,14 +71,15 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
         return this.translateDiagnostics(
             this.scssLanguageService.doValidation(doc, stylesheet),
             doc,
-            context);
+            context,
+        contents).filter(x => !!x) as ts.Diagnostic[];
     }
 
     private createVirtualDocument(
         contents: string,
         context: TemplateContext
     ): vscode.TextDocument {
-        contents = `${wrapperPre}${contents}}`;
+        contents = `${wrapperPre}${contents}\n}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',
@@ -121,20 +122,31 @@ export default class VscodeLanguageServiceAdapter implements TemplateStringLangu
     private translateDiagnostics(
         diagnostics: vscode.Diagnostic[],
         doc: vscode.TextDocument,
-        context: TemplateContext
+        context: TemplateContext,
+        content: string
     ) {
         const sourceFile = context.node.getSourceFile();
         return diagnostics.map(diag =>
-            this.translateDiagnostic(diag, sourceFile, doc));
+            this.translateDiagnostic(diag, sourceFile, doc, context, content));
     }
 
     private translateDiagnostic(
         diagnostic: vscode.Diagnostic,
         file: ts.SourceFile,
-        doc: vscode.TextDocument
-    ): ts.Diagnostic {
-        const start = this.fromVirtualDocOffset(doc.offsetAt(diagnostic.range.start));
-        const length = this.fromVirtualDocOffset(doc.offsetAt(diagnostic.range.end)) - start;
+        doc: vscode.TextDocument,
+        context: TemplateContext,
+        content: string
+    ): ts.Diagnostic | undefined {
+        // Make sure returned error is within the real document
+        if (diagnostic.range.start.line === 0
+            || diagnostic.range.start.line >= doc.lineCount
+            || diagnostic.range.start.character >= content.length
+        ) {
+            return undefined;
+        }
+
+        const start = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.start));
+        const length = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.end)) - start;
         const code = typeof diagnostic.code === 'number' ? diagnostic.code : 9999;
         return {
             code,
