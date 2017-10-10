@@ -9,9 +9,13 @@ branches:
   only:
   - master
 
-install:
-  - npm install
-
 cache:
   directories:
     - node_modules
+
+install:
+  - npm install
+  - (cd e2e ; npm install)
+
+script:
+  - npm run e2e
