@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.1.2 — October 24, 2017
+- Fix bug that could cause errors not to be reported when on the last line of a block.
+
 # 0.1.1 — October 24, 2017
 - Compile to ES5 to support regular Visual Studio
 
