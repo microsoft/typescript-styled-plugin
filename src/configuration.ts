@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-const assign = require('object.assign').getPolyfill();
 
 export interface TsStyledPluginConfiguration {
     tags: string[];
@@ -17,7 +16,7 @@ export const defaultConfiguration: TsStyledPluginConfiguration = {
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
-    const lint = assign({}, defaultConfiguration.lint, config.lint || {});
+    const lint = Object.assign({}, defaultConfiguration.lint, config.lint || {});
     return {
         tags: config.tags || defaultConfiguration.tags,
         validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
