@@ -120,7 +120,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         doc: vscode.TextDocument,
         context: TemplateContext,
         content: string
-    ) {
+    ) {        
         const sourceFile = context.node.getSourceFile();
         return diagnostics.map(diag =>
             this.translateDiagnostic(diag, sourceFile, doc, context, content));
@@ -132,10 +132,10 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         doc: vscode.TextDocument,
         context: TemplateContext,
         content: string
-    ): ts.Diagnostic | undefined {
+    ): ts.Diagnostic | undefined {        
         // Make sure returned error is within the real document
         if (diagnostic.range.start.line === 0
-            || diagnostic.range.start.line >= doc.lineCount
+            || diagnostic.range.start.line > doc.lineCount
             || diagnostic.range.start.character >= content.length
         ) {
             return undefined;

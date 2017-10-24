@@ -92,4 +92,27 @@ describe('Errors', () => {
             assert.strictEqual(error.end.offset, 59);
         });
     });
+
+    it('should return error for multiline unknown property #20', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, [
+            'function css(x) { return x; };',
+            'const q = css`',
+            'boarder: 1px solid black;',
+            '`'
+            ].join('\n'));
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 1);
+            const error = errorResponse.body[0];
+            assert.strictEqual(error.text, 'Unknown property.');
+            assert.strictEqual(error.start.line, 3);
+            assert.strictEqual(error.start.offset, 1);
+            assert.strictEqual(error.end.line, 3);
+            assert.strictEqual(error.end.offset, 8);
+        });
+    });
 })
