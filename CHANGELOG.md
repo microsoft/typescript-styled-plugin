@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.1.1 — October 24, 2017
+- Compile to ES5 to support regular Visual Studio
+
 # 0.1.0
 - Support for nested classes. Thanks @asvetliakov!
 - Support for styled properties, such as `MyButton.extend...`. Thanks @asvetliakov!
