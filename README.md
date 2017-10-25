@@ -92,7 +92,7 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 To get sytnax highlighting for styled strings in Atom, consider installing the [language-babel](https://atom.io/packages/language-babel) extension.
 
 
-### With Atom
+### With Visual Studio
 This plugin works [Visual Studio 2017](https://www.visualstudio.com) using the TypeScript 2.5+ SDK.
 
 First install the plugin in your project:
