@@ -101,7 +101,7 @@ First install the plugin in your project:
 npm install --save-dev typescript-styled-plugin
 ```
 
-Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or [`jsconfig.json`](https://code.visualstudio.com/Docs/languages/javascript#_javascript-project-jsconfigjson) and restart Atom.
+Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html).
 
 ```json
 {
@@ -115,7 +115,7 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 }
 ```
 
-Then reload your project to make sure the plugin has been loaded properly.
+Then reload your project to make sure the plugin has been loaded properly. Note that `jsconfig.json` projects are currently not supported in VS.
 
 
 ## Configuration
