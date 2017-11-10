@@ -18,6 +18,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     private _scssLanguageService?: LanguageService;
 
     constructor(
+        private readonly typescript: typeof ts,
         private readonly configuration: TsStyledPluginConfiguration
     ) { }
 
@@ -44,7 +45,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.cssLanguageService.parseStylesheet(doc);
         const items = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
-        return translateCompletionItems(items);
+        return translateCompletionItems(this.typescript, items);
     }
 
     public getQuickInfoAtPosition(
@@ -120,7 +121,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         doc: vscode.TextDocument,
         context: TemplateContext,
         content: string
-    ) {        
+    ) {
         const sourceFile = context.node.getSourceFile();
         return diagnostics.map(diag =>
             this.translateDiagnostic(diag, sourceFile, doc, context, content));
@@ -132,7 +133,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         doc: vscode.TextDocument,
         context: TemplateContext,
         content: string
-    ): ts.Diagnostic | undefined {        
+    ): ts.Diagnostic | undefined {
         // Make sure returned error is within the real document
         if (diagnostic.range.start.line === 0
             || diagnostic.range.start.line > doc.lineCount
@@ -147,7 +148,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         return {
             code,
             messageText: diagnostic.message,
-            category: translateSeverity(diagnostic.severity),
+            category: translateSeverity(this.typescript, diagnostic.severity),
             file,
             start,
             length,
@@ -173,7 +174,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         convertPart(hover.contents);
         const start = context.toOffset(this.fromVirtualDocPosition(hover.range ? hover.range.start : position));
         return {
-            kind: ts.ScriptElementKind.unknown,
+            kind: this.typescript.ScriptElementKind.unknown,
             kindModifiers: '',
             textSpan: {
                 start,
@@ -186,74 +187,86 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     }
 }
 
-function translateCompletionItems(items: vscode.CompletionList): ts.CompletionInfo {
+function translateCompletionItems(
+    typescript: typeof ts,
+    items: vscode.CompletionList
+): ts.CompletionInfo {
     return {
         isGlobalCompletion: false,
         isMemberCompletion: false,
         isNewIdentifierLocation: false,
-        entries: items.items.map(translateCompetionEntry),
+        entries: items.items.map(x => translateCompetionEntry(typescript, x)),
     };
 }
 
-function translateCompetionEntry(item: vscode.CompletionItem): ts.CompletionEntry {
+function translateCompetionEntry(
+    typescript: typeof ts,
+    item: vscode.CompletionItem
+): ts.CompletionEntry {
     return {
         name: item.label,
         kindModifiers: 'declare',
-        kind: item.kind ? translateionCompletionItemKind(item.kind) : ts.ScriptElementKind.unknown,
+        kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
         sortText: '0',
     };
 }
 
-function translateionCompletionItemKind(kind: vscode.CompletionItemKind): ts.ScriptElementKind {
+function translateionCompletionItemKind(
+    typescript: typeof ts,
+    kind: vscode.CompletionItemKind
+): ts.ScriptElementKind {
     switch (kind) {
         case vscode.CompletionItemKind.Method:
-            return ts.ScriptElementKind.memberFunctionElement;
+            return typescript.ScriptElementKind.memberFunctionElement;
         case vscode.CompletionItemKind.Function:
-            return ts.ScriptElementKind.functionElement;
+            return typescript.ScriptElementKind.functionElement;
         case vscode.CompletionItemKind.Constructor:
-            return ts.ScriptElementKind.constructorImplementationElement;
+            return typescript.ScriptElementKind.constructorImplementationElement;
         case vscode.CompletionItemKind.Field:
         case vscode.CompletionItemKind.Variable:
-            return ts.ScriptElementKind.variableElement;
+            return typescript.ScriptElementKind.variableElement;
         case vscode.CompletionItemKind.Class:
-            return ts.ScriptElementKind.classElement;
+            return typescript.ScriptElementKind.classElement;
         case vscode.CompletionItemKind.Interface:
-            return ts.ScriptElementKind.interfaceElement;
+            return typescript.ScriptElementKind.interfaceElement;
         case vscode.CompletionItemKind.Module:
-            return ts.ScriptElementKind.moduleElement;
+            return typescript.ScriptElementKind.moduleElement;
         case vscode.CompletionItemKind.Property:
-            return ts.ScriptElementKind.memberVariableElement;
+            return typescript.ScriptElementKind.memberVariableElement;
         case vscode.CompletionItemKind.Unit:
         case vscode.CompletionItemKind.Value:
-            return ts.ScriptElementKind.constElement;
+            return typescript.ScriptElementKind.constElement;
         case vscode.CompletionItemKind.Enum:
-            return ts.ScriptElementKind.enumElement;
+            return typescript.ScriptElementKind.enumElement;
         case vscode.CompletionItemKind.Keyword:
-            return ts.ScriptElementKind.keyword;
+            return typescript.ScriptElementKind.keyword;
         case vscode.CompletionItemKind.Color:
-            return ts.ScriptElementKind.constElement;
+            return typescript.ScriptElementKind.constElement;
         case vscode.CompletionItemKind.Reference:
-            return ts.ScriptElementKind.alias;
+            return typescript.ScriptElementKind.alias;
         case vscode.CompletionItemKind.File:
-            return ts.ScriptElementKind.moduleElement;
+            return typescript.ScriptElementKind.moduleElement;
         case vscode.CompletionItemKind.Snippet:
         case vscode.CompletionItemKind.Text:
         default:
-            return ts.ScriptElementKind.unknown;
+            return typescript.ScriptElementKind.unknown;
     }
 }
 
-function translateSeverity(severity: vscode.DiagnosticSeverity | undefined): ts.DiagnosticCategory {
+function translateSeverity(
+    typescript: typeof ts,
+    severity: vscode.DiagnosticSeverity | undefined
+): ts.DiagnosticCategory {
     switch (severity) {
         case vscode.DiagnosticSeverity.Information:
         case vscode.DiagnosticSeverity.Hint:
-            return ts.DiagnosticCategory.Message;
+            return typescript.DiagnosticCategory.Message;
 
         case vscode.DiagnosticSeverity.Warning:
-            return ts.DiagnosticCategory.Warning;
+            return typescript.DiagnosticCategory.Warning;
 
         case vscode.DiagnosticSeverity.Error:
         default:
-            return ts.DiagnosticCategory.Error;
+            return typescript.DiagnosticCategory.Error;
     }
 }

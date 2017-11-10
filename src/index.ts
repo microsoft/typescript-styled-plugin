@@ -19,28 +19,28 @@ class LanguageServiceLogger implements Logger {
     }
 }
 
-function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-    const logger = new LanguageServiceLogger(info);
-    const config = loadConfiguration(info.config);
-
-    logger.log('config: ' + JSON.stringify(config));
-
-    return decorateWithTemplateLanguageService(info.languageService, new StyledTemplateLanguageService(config), {
-        tags: config.tags,
-        enableForStringWithSubstitutions: true,
-        getSubstitution(
-            templateString: string,
-            start: number,
-            end: number
-        ): string {
-            const placeholder = templateString.slice(start, end);
-            const pre = templateString.slice(0, start);
-            const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
-            return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
-        },
-    }, { logger });
-}
-
 export = (mod: { typescript: typeof ts }) => {
-    return { create };
+    return {
+        create(info: ts.server.PluginCreateInfo): ts.LanguageService {
+            const logger = new LanguageServiceLogger(info);
+            const config = loadConfiguration(info.config);
+
+            logger.log('config: ' + JSON.stringify(config));
+
+            return decorateWithTemplateLanguageService(mod.typescript, info.languageService, new StyledTemplateLanguageService(mod.typescript, config), {
+                tags: config.tags,
+                enableForStringWithSubstitutions: true,
+                getSubstitution(
+                    templateString: string,
+                    start: number,
+                    end: number
+                ): string {
+                    const placeholder = templateString.slice(start, end);
+                    const pre = templateString.slice(0, start);
+                    const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
+                    return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+                },
+            }, { logger });
+        },
+    };
 };

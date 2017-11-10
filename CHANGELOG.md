@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.2.0 November 9, 2017
+- Do not take runtime dependecy on TypeScript.
+
 # 0.1.2 — October 24, 2017
 - Fix bug that could cause errors not to be reported when on the last line of a block.
 

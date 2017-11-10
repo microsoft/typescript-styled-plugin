@@ -1,6 +1,6 @@
 {
   "name": "typescript-styled-plugin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "TypeScript language service plugin that adds IntelliSense for styled components",
   "keywords": [
     "TypeScript",
@@ -20,7 +20,7 @@
     "url": "https://github.com/Microsoft/typescript-styled-plugin/issues"
   },
   "dependencies": {
-    "typescript-template-language-service-decorator": "0.1.2",
+    "typescript-template-language-service-decorator": "^1.0.0",
     "vscode-css-languageservice": "^2.1.10",
     "vscode-languageserver-types": "^3.4.0"
   },
