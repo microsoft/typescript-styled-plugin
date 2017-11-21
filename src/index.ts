@@ -36,10 +36,18 @@ export = (mod: { typescript: typeof ts }) => {
                     end: number
                 ): string {
                     const placeholder = templateString.slice(start, end);
+
+                    // check to see if it's an in-property interplation, or a mixin,
+                    // and determine which character to use in either case
+                    // if in-property, replace with "xxxxxx"
+                    // if a mixin, replace with "      "
                     const pre = templateString.slice(0, start);
                     const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
 
                     let result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+
+                    // check if it's a mixin and if followed by a semicolon
+                    // if so, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
                     if (replacementChar === ' ' && templateString.charAt(end) === ';') {
                         result = '$a:0' + result.slice(4);
                     }
