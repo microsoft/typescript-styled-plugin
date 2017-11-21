@@ -4,7 +4,6 @@ const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
 const mockFileName = 'main.ts';
 
-
 describe('Errors', () => {
     it('should return error for unknown property', () => {
         const server = createServer();
@@ -115,4 +114,27 @@ describe('Errors', () => {
             assert.strictEqual(error.end.offset, 8);
         });
     });
+
+    it('should not error with interpolation at start, followed by semicolon #22', () => {
+        const server = createServer();
+
+        const lines = [
+            "function css(...args){}",
+            "const mixin = ''",
+            "css`",
+            "  ${mixin};",
+            "  color: blue;",
+            "`"
+        ]
+
+        openMockFile(server, mockFileName, lines.join('\n'));
+
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        })
+    })
 })

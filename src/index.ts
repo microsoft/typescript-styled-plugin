@@ -38,7 +38,12 @@ export = (mod: { typescript: typeof ts }) => {
                     const placeholder = templateString.slice(start, end);
                     const pre = templateString.slice(0, start);
                     const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
-                    return placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+
+                    let result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+                    if (replacementChar === ' ' && templateString.charAt(end) === ';') {
+                        result = '$a:0' + result.slice(4);
+                    }
+                    return result;
                 },
             }, { logger });
         },
