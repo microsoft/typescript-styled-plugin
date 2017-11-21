@@ -125,7 +125,7 @@ describe('Errors', () => {
             "  ${mixin};",
             "  color: blue;",
             "`"
-        ]
+        ];
 
         openMockFile(server, mockFileName, lines.join('\n'));
 
@@ -135,6 +135,6 @@ describe('Errors', () => {
             const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
-        })
+        });
     })
 })
