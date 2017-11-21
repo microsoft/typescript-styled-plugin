@@ -115,16 +115,33 @@ describe('Errors', () => {
         });
     });
 
-    it('should not error with interpolation at start, followed by semicolon #22', () => {
+    it.only('should not error with interpolation at start, followed by semicolon #22', () => {
         const server = createServer();
 
         const lines = [
             "function css(...args){}",
             "const mixin = ''",
+
+            // test single-line
+            "css`${mixin}; color: blue;`",
+
+            // test multi-line (normal case)
             "css`",
             "  ${mixin};",
             "  color: blue;",
-            "`"
+            "`",
+
+            // test multiple spaces after semi
+            "css`",
+            "  ${mixin}   ;",
+            "  color: blue;",
+            "`",
+
+            // test hella semis - will this ever pop up? probably not, but screw it
+            "css`",
+            "  ${mixin};;; ;; ;",
+            "  color: blue;",
+            "`",
         ];
 
         openMockFile(server, mockFileName, lines.join('\n'));

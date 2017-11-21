@@ -48,7 +48,7 @@ export = (mod: { typescript: typeof ts }) => {
 
                     // check if it's a mixin and if followed by a semicolon
                     // if so, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
-                    if (replacementChar === ' ' && templateString.charAt(end) === ';') {
+                    if (replacementChar === ' ' && templateString.slice(end).match(/^\s*;/)) {
                         result = '$a:0' + result.slice(4);
                     }
                     return result;
