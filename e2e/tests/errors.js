@@ -115,7 +115,7 @@ describe('Errors', () => {
         });
     });
 
-    it.only('should not error with interpolation at start, followed by semicolon #22', () => {
+    it('should not error with interpolation at start, followed by semicolon #22', () => {
         const server = createServer();
 
         const lines = [
