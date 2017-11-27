@@ -1,6 +1,9 @@
 # Changelog
 
-# 0.2.0 November 9, 2017
+# 0.2.1 - November 27, 2017
+- Fix cases where placeholder is followed by a trailing semicolon. Thanks @kingdaro!
+
+# 0.2.0 - November 9, 2017
 - Do not take runtime dependecy on TypeScript.
 
 # 0.1.2 — October 24, 2017
