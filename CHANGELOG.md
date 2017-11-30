@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.2.2 - November 29, 2017
+- Fix auto import completions not showing up when using plugin with TS 2.6.2+
+
 # 0.2.1 - November 27, 2017
 - Fix cases where placeholder is followed by a trailing semicolon. Thanks @kingdaro!
 
