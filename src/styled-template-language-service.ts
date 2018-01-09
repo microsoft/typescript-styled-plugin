@@ -14,7 +14,7 @@ const wrapperPre = ':root{\n';
 
 export default class StyledTemplateLanguageService implements TemplateLanguageService {
 
-    private _cssLanguageService?: LanguageService;
+    // private _cssLanguageService?: LanguageService;
     private _scssLanguageService?: LanguageService;
 
     constructor(
@@ -22,13 +22,13 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         private readonly configuration: TsStyledPluginConfiguration
     ) { }
 
-    private get cssLanguageService(): LanguageService {
-        if (!this._cssLanguageService) {
-            this._cssLanguageService = getCSSLanguageService();
-            this._cssLanguageService.configure(this.configuration);
-        }
-        return this._cssLanguageService;
-    }
+    // private get cssLanguageService(): LanguageService {
+    //     if (!this._cssLanguageService) {
+    //         this._cssLanguageService = getCSSLanguageService();
+    //         this._cssLanguageService.configure(this.configuration);
+    //     }
+    //     return this._cssLanguageService;
+    // }
 
     private get scssLanguageService(): LanguageService {
         if (!this._scssLanguageService) {
@@ -43,8 +43,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         position: ts.LineAndCharacter
     ): ts.CompletionInfo {
         const doc = this.createVirtualDocument(context);
-        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        const items = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const items = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
         return translateCompletionItems(this.typescript, items);
     }
 
@@ -53,8 +53,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         position: ts.LineAndCharacter
     ): ts.QuickInfo | undefined {
         const doc = this.createVirtualDocument(context);
-        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        const hover = this.cssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const hover = this.scssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
         if (hover) {
             return this.translateHover(hover, this.toVirtualDocPosition(position), context);
         }
