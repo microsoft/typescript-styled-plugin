@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.3.0 - November 29, 2017
+- Added basic support for completion entry details
+
 # 0.2.2 - November 29, 2017
 - Fix auto import completions not showing up when using plugin with TS 2.6.2+
 
