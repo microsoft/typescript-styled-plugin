@@ -42,10 +42,27 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         context: TemplateContext,
         position: ts.LineAndCharacter
     ): ts.CompletionInfo {
-        const doc = this.createVirtualDocument(context);
-        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        const items = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
-        return translateCompletionItems(this.typescript, items);
+        const items = this.getCompletionItems(context, position);
+        return translateCompletionItemsToCompletionInfo(this.typescript, items);
+    }
+
+    public getCompletionEntryDetails?(
+        context: TemplateContext,
+        position: ts.LineAndCharacter,
+        name: string
+    ): ts.CompletionEntryDetails {
+        const item = this.getCompletionItems(context, position).items.find(x => x.label === name);
+        if (!item) {
+            return {
+                name,
+                kind: this.typescript.ScriptElementKind.unknown,
+                kindModifiers: '',
+                tags: [],
+                displayParts: toDisplayParts(name),
+                documentation: [],
+            };
+        }
+        return translateCompletionItemsToCompletionEntryDetails(this.typescript, item);
     }
 
     public getQuickInfoAtPosition(
@@ -114,6 +131,12 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     private fromVirtualDocOffset(offset: number) {
         return offset - wrapperPre.length;
+    }
+
+    private getCompletionItems(context: TemplateContext, position: ts.LineAndCharacter) {
+        const doc = this.createVirtualDocument(context);
+        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
+        return this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
     }
 
     private translateDiagnostics(
@@ -187,7 +210,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     }
 }
 
-function translateCompletionItems(
+function translateCompletionItemsToCompletionInfo(
     typescript: typeof ts,
     items: vscode.CompletionList
 ): ts.CompletionInfo {
@@ -199,6 +222,20 @@ function translateCompletionItems(
     };
 }
 
+function translateCompletionItemsToCompletionEntryDetails(
+    typescript: typeof ts,
+    item: vscode.CompletionItem
+): ts.CompletionEntryDetails {
+    return {
+        name: item.label,
+        kindModifiers: 'declare',
+        kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        displayParts: toDisplayParts(item.detail),
+        documentation: toDisplayParts(item.documentation),
+        tags: [],
+    };
+}
+
 function translateCompetionEntry(
     typescript: typeof ts,
     item: vscode.CompletionItem
@@ -207,7 +244,7 @@ function translateCompetionEntry(
         name: item.label,
         kindModifiers: 'declare',
         kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
-        sortText: '0',
+        sortText: item.sortText || item.label,
     };
 }
 
@@ -269,4 +306,10 @@ function translateSeverity(
         default:
             return typescript.DiagnosticCategory.Error;
     }
+}
+
+function toDisplayParts(
+    text: string | undefined
+): ts.SymbolDisplayPart[] {
+    return text ? [{ text, kind: 'text' }] : [];
 }
