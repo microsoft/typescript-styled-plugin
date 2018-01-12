@@ -1,6 +1,9 @@
 # Changelog
 
-# 0.3.0 - November 29, 2017
+# 0.3.1 - January 11, 2018
+- Cache the completion entries so we don't recompute them as often.
+
+# 0.3.0 - January 9, 2018
 - Added basic support for completion entry details
 
 # 0.2.2 - November 29, 2017
