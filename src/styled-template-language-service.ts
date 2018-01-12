@@ -12,10 +12,50 @@ import { TemplateLanguageService, TemplateContext } from 'typescript-template-la
 
 const wrapperPre = ':root{\n';
 
-export default class StyledTemplateLanguageService implements TemplateLanguageService {
+function arePositionsEqual(
+    left: ts.LineAndCharacter,
+    right: ts.LineAndCharacter
+): boolean {
+    return left.line === right.line && left.character === right.character;
+}
 
+class CompletionsCache {
+    private _cachedCompletionsFile?: string;
+    private _cachedCompletionsPosition?: ts.LineAndCharacter;
+    private _cachedCompletionsContent?: string;
+    private _completions?: vscode.CompletionList;
+
+    public getCached(
+        context: TemplateContext,
+        position: ts.LineAndCharacter
+    ): vscode.CompletionList | undefined {
+        if (this._completions
+            && context.fileName === this._cachedCompletionsFile
+            && this._cachedCompletionsPosition && arePositionsEqual(position, this._cachedCompletionsPosition)
+            && context.text === this._cachedCompletionsContent
+        ) {
+            return this._completions;
+        }
+
+        return undefined;
+    }
+
+    public updateCached(
+        context: TemplateContext,
+        position: ts.LineAndCharacter,
+        completions: vscode.CompletionList
+    ) {
+        this._cachedCompletionsFile = context.fileName;
+        this._cachedCompletionsPosition = position;
+        this._cachedCompletionsContent = context.text;
+        this._completions = completions;
+    }
+}
+
+export default class StyledTemplateLanguageService implements TemplateLanguageService {
     private _cssLanguageService?: LanguageService;
     private _scssLanguageService?: LanguageService;
+    private _completionsCache = new CompletionsCache();
 
     constructor(
         private readonly typescript: typeof ts,
@@ -133,10 +173,20 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         return offset - wrapperPre.length;
     }
 
-    private getCompletionItems(context: TemplateContext, position: ts.LineAndCharacter) {
+    private getCompletionItems(
+        context: TemplateContext,
+        position: ts.LineAndCharacter
+    ): vscode.CompletionList {
+        const cached = this._completionsCache.getCached(context, position);
+        if (cached) {
+            return cached;
+        }
+
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        return this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const completions = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        this._completionsCache.updateCached(context, position, completions);
+        return completions;
     }
 
     private translateDiagnostics(
