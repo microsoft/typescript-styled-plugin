@@ -6,18 +6,8 @@
 import * as ts from 'typescript/lib/tsserverlibrary';
 import StyledTemplateLanguageService from './styled-template-language-service';
 import { decorateWithTemplateLanguageService, Logger } from 'typescript-template-language-service-decorator';
-import { pluginName } from './config';
 import { loadConfiguration } from './configuration';
-
-class LanguageServiceLogger implements Logger {
-    constructor(
-        private readonly info: ts.server.PluginCreateInfo
-    ) { }
-
-    public log(msg: string) {
-        this.info.project.projectService.logger.info(`[${pluginName}] ${msg}`);
-    }
-}
+import { LanguageServiceLogger } from './logger';
 
 export = (mod: { typescript: typeof ts }) => {
     return {
@@ -27,7 +17,7 @@ export = (mod: { typescript: typeof ts }) => {
 
             logger.log('config: ' + JSON.stringify(config));
 
-            return decorateWithTemplateLanguageService(mod.typescript, info.languageService, new StyledTemplateLanguageService(mod.typescript, config), {
+            return decorateWithTemplateLanguageService(mod.typescript, info.languageService, new StyledTemplateLanguageService(mod.typescript, config, logger), {
                 tags: config.tags,
                 enableForStringWithSubstitutions: true,
                 getSubstitution(

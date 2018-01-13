@@ -9,6 +9,9 @@ import * as vscode from 'vscode-languageserver-types';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator';
+import { LanguageServiceLogger } from './logger';
+import { CompletionItem } from 'vscode-languageserver-types';
+import { CompletionInfo } from 'typescript/lib/tsserverlibrary';
 
 const wrapperPre = ':root{\n';
 
@@ -19,7 +22,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     constructor(
         private readonly typescript: typeof ts,
-        private readonly configuration: TsStyledPluginConfiguration
+        private readonly configuration: TsStyledPluginConfiguration,
+        private readonly logger: LanguageServiceLogger
     ) { }
 
     // private get cssLanguageService(): LanguageService {
@@ -45,6 +49,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         const items = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        items.items = filterCompletionItems(items.items);
         return translateCompletionItems(this.typescript, items);
     }
 
@@ -185,6 +190,32 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             tags: [],
         };
     }
+}
+
+function filterCompletionItems(
+    items: CompletionItem[]
+): CompletionItem[] {
+    return items.filter(item => {
+        if (
+            item.kind === vscode.CompletionItemKind.Property ||
+            item.kind === vscode.CompletionItemKind.Unit ||
+            item.kind === vscode.CompletionItemKind.Value ||
+            item.kind === vscode.CompletionItemKind.Keyword ||
+            item.kind === vscode.CompletionItemKind.Snippet ||
+            item.kind === vscode.CompletionItemKind.File ||
+            item.kind === vscode.CompletionItemKind.Color ||
+            !item.kind
+        ) {
+            return true;
+        } else if (
+            item.kind === vscode.CompletionItemKind.Function &&
+            item.label.substr(0, 1) === ':'
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    });
 }
 
 function translateCompletionItems(
