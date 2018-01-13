@@ -4,7 +4,7 @@
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getSCSSLanguageService, getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
+import { getSCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import * as vscode from 'vscode-languageserver-types';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
@@ -65,14 +65,6 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         private readonly configuration: TsStyledPluginConfiguration,
         private readonly logger: LanguageServiceLogger
     ) { }
-
-    // private get cssLanguageService(): LanguageService {
-    //     if (!this._cssLanguageService) {
-    //         this._cssLanguageService = getCSSLanguageService();
-    //         this._cssLanguageService.configure(this.configuration);
-    //     }
-    //     return this._cssLanguageService;
-    // }
 
     private get scssLanguageService(): LanguageService {
         if (!this._scssLanguageService) {
