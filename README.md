@@ -358,10 +358,16 @@ The plugin is written in [TypeScript](http://www.typescriptlang.org). The source
 npm run compile
 ```
 
-And then run the end to end tests with the `e2e` script:
+switch to `e2` to install or update test dependencies:
 
 ```bash
 (cd e2e && npm install)
+```
+
+and then navigate back to the project root and run the end to end tests with the `e2e` script:
+
+```bash
+cd ..
 npm run e2e
 ```
 
