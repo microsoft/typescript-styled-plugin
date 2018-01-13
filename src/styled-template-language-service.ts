@@ -15,10 +15,50 @@ import { CompletionInfo } from 'typescript/lib/tsserverlibrary';
 
 const wrapperPre = ':root{\n';
 
-export default class StyledTemplateLanguageService implements TemplateLanguageService {
+function arePositionsEqual(
+    left: ts.LineAndCharacter,
+    right: ts.LineAndCharacter
+): boolean {
+    return left.line === right.line && left.character === right.character;
+}
 
-    // private _cssLanguageService?: LanguageService;
+class CompletionsCache {
+    private _cachedCompletionsFile?: string;
+    private _cachedCompletionsPosition?: ts.LineAndCharacter;
+    private _cachedCompletionsContent?: string;
+    private _completions?: vscode.CompletionList;
+
+    public getCached(
+        context: TemplateContext,
+        position: ts.LineAndCharacter
+    ): vscode.CompletionList | undefined {
+        if (this._completions
+            && context.fileName === this._cachedCompletionsFile
+            && this._cachedCompletionsPosition && arePositionsEqual(position, this._cachedCompletionsPosition)
+            && context.text === this._cachedCompletionsContent
+        ) {
+            return this._completions;
+        }
+
+        return undefined;
+    }
+
+    public updateCached(
+        context: TemplateContext,
+        position: ts.LineAndCharacter,
+        completions: vscode.CompletionList
+    ) {
+        this._cachedCompletionsFile = context.fileName;
+        this._cachedCompletionsPosition = position;
+        this._cachedCompletionsContent = context.text;
+        this._completions = completions;
+    }
+}
+
+export default class StyledTemplateLanguageService implements TemplateLanguageService {
+    private _cssLanguageService?: LanguageService;
     private _scssLanguageService?: LanguageService;
+    private _completionsCache = new CompletionsCache();
 
     constructor(
         private readonly typescript: typeof ts,
@@ -46,11 +86,28 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         context: TemplateContext,
         position: ts.LineAndCharacter
     ): ts.CompletionInfo {
-        const doc = this.createVirtualDocument(context);
-        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const items = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const items = this.getCompletionItems(context, position);
         items.items = filterCompletionItems(items.items);
-        return translateCompletionItems(this.typescript, items);
+        return translateCompletionItemsToCompletionInfo(this.typescript, items);
+    }
+
+    public getCompletionEntryDetails?(
+        context: TemplateContext,
+        position: ts.LineAndCharacter,
+        name: string
+    ): ts.CompletionEntryDetails {
+        const item = this.getCompletionItems(context, position).items.find(x => x.label === name);
+        if (!item) {
+            return {
+                name,
+                kind: this.typescript.ScriptElementKind.unknown,
+                kindModifiers: '',
+                tags: [],
+                displayParts: toDisplayParts(name),
+                documentation: [],
+            };
+        }
+        return translateCompletionItemsToCompletionEntryDetails(this.typescript, item);
     }
 
     public getQuickInfoAtPosition(
@@ -119,6 +176,22 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     private fromVirtualDocOffset(offset: number) {
         return offset - wrapperPre.length;
+    }
+
+    private getCompletionItems(
+        context: TemplateContext,
+        position: ts.LineAndCharacter
+    ): vscode.CompletionList {
+        const cached = this._completionsCache.getCached(context, position);
+        if (cached) {
+            return cached;
+        }
+
+        const doc = this.createVirtualDocument(context);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const completions = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        this._completionsCache.updateCached(context, position, completions);
+        return completions;
     }
 
     private translateDiagnostics(
@@ -218,7 +291,7 @@ function filterCompletionItems(
     });
 }
 
-function translateCompletionItems(
+function translateCompletionItemsToCompletionInfo(
     typescript: typeof ts,
     items: vscode.CompletionList
 ): ts.CompletionInfo {
@@ -230,6 +303,20 @@ function translateCompletionItems(
     };
 }
 
+function translateCompletionItemsToCompletionEntryDetails(
+    typescript: typeof ts,
+    item: vscode.CompletionItem
+): ts.CompletionEntryDetails {
+    return {
+        name: item.label,
+        kindModifiers: 'declare',
+        kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        displayParts: toDisplayParts(item.detail),
+        documentation: toDisplayParts(item.documentation),
+        tags: [],
+    };
+}
+
 function translateCompetionEntry(
     typescript: typeof ts,
     item: vscode.CompletionItem
@@ -238,7 +325,7 @@ function translateCompetionEntry(
         name: item.label,
         kindModifiers: 'declare',
         kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
-        sortText: '0',
+        sortText: item.sortText || item.label,
     };
 }
 
@@ -300,4 +387,10 @@ function translateSeverity(
         default:
             return typescript.DiagnosticCategory.Error;
     }
+}
+
+function toDisplayParts(
+    text: string | undefined
+): ts.SymbolDisplayPart[] {
+    return text ? [{ text, kind: 'text' }] : [];
 }
