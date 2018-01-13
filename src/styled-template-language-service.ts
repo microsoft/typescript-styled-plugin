@@ -79,7 +79,6 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         position: ts.LineAndCharacter
     ): ts.CompletionInfo {
         const items = this.getCompletionItems(context, position);
-        items.items = filterCompletionItems(items.items);
         return translateCompletionItemsToCompletionInfo(this.typescript, items);
     }
 
@@ -182,6 +181,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         const completions = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        completions.items = filterCompletionItems(completions.items);
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
