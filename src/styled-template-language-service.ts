@@ -4,7 +4,7 @@
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getSCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
+import { getSCSSLanguageService, getCSSLanguageService, Stylesheet, LanguageService } from 'vscode-css-languageservice';
 import * as vscode from 'vscode-languageserver-types';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
@@ -72,6 +72,14 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             this._scssLanguageService.configure(this.configuration);
         }
         return this._scssLanguageService;
+    }
+
+    private get cssLanguageService(): LanguageService {
+        if (!this._cssLanguageService) {
+            this._cssLanguageService = getCSSLanguageService();
+            this._cssLanguageService.configure(this.configuration);
+        }
+        return this._cssLanguageService;
     }
 
     public getCompletionsAtPosition(
@@ -180,8 +188,10 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const completions = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
-        completions.items = filterCompletionItems(completions.items);
+        const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        completionsScss.items = filterScssCompletionItems(completionsScss.items);
+        const completions = {...completionsCss, items: [...completionsCss.items, ...completionsScss.items]};
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
@@ -257,30 +267,10 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     }
 }
 
-function filterCompletionItems(
+function filterScssCompletionItems(
     items: CompletionItem[]
 ): CompletionItem[] {
-    return items.filter(item => {
-        if (
-            item.kind === vscode.CompletionItemKind.Property ||
-            item.kind === vscode.CompletionItemKind.Unit ||
-            item.kind === vscode.CompletionItemKind.Value ||
-            item.kind === vscode.CompletionItemKind.Keyword ||
-            item.kind === vscode.CompletionItemKind.Snippet ||
-            item.kind === vscode.CompletionItemKind.File ||
-            item.kind === vscode.CompletionItemKind.Color ||
-            !item.kind
-        ) {
-            return true;
-        } else if (
-            item.kind === vscode.CompletionItemKind.Function &&
-            item.label.substr(0, 1) === ':'
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    });
+    return items.filter(item => (item.kind === vscode.CompletionItemKind.Function && item.label.substr(0, 1) === ':'));
 }
 
 function translateCompletionItemsToCompletionInfo(
