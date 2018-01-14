@@ -10,8 +10,6 @@ import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator';
 import { LanguageServiceLogger } from './logger';
-import { CompletionItem } from 'vscode-languageserver-types';
-import { CompletionInfo } from 'typescript/lib/tsserverlibrary';
 
 const wrapperPre = ':root{\n';
 
@@ -66,20 +64,20 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         private readonly logger: LanguageServiceLogger
     ) { }
 
-    private get scssLanguageService(): LanguageService {
-        if (!this._scssLanguageService) {
-            this._scssLanguageService = getSCSSLanguageService();
-            this._scssLanguageService.configure(this.configuration);
-        }
-        return this._scssLanguageService;
-    }
-
     private get cssLanguageService(): LanguageService {
         if (!this._cssLanguageService) {
             this._cssLanguageService = getCSSLanguageService();
             this._cssLanguageService.configure(this.configuration);
         }
         return this._cssLanguageService;
+    }
+
+    private get scssLanguageService(): LanguageService {
+        if (!this._scssLanguageService) {
+            this._scssLanguageService = getSCSSLanguageService();
+            this._scssLanguageService.configure(this.configuration);
+        }
+        return this._scssLanguageService;
     }
 
     public getCompletionsAtPosition(
@@ -268,8 +266,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 }
 
 function filterScssCompletionItems(
-    items: CompletionItem[]
-): CompletionItem[] {
+    items: vscode.CompletionItem[]
+): vscode.CompletionItem[] {
     return items.filter(item => (item.kind === vscode.CompletionItemKind.Function && item.label.substr(0, 1) === ':'));
 }
 
