@@ -189,7 +189,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
         const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
-        const completions = {...completionsCss, items: [...completionsCss.items, ...completionsScss.items]};
+        const completions = { ...completionsCss, items: [...completionsCss.items, ...completionsScss.items] };
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
