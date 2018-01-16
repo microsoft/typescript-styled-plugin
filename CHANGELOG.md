@@ -1,7 +1,10 @@
 # Changelog
 
+# 0.4.0 - January 16, 2018
+- Fix suggestions inside of nested selectors. Thanks @aczekajski!
+
 # 0.3.1 - January 11, 2018
-- Cache the completion entries so we don't recompute them as often.
+- Cache completion entries so we don't recompute them as often.
 
 # 0.3.0 - January 9, 2018
 - Added basic support for completion entry details
