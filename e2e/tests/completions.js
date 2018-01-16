@@ -5,7 +5,7 @@ const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 const mockFileName = 'main.ts';
 
 describe('Completions', () => {
-    it('should return property value completions single line string', () => {
+    it('should return property value completions for single line string', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`color:`');
         server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1, prefix: '' } });
@@ -15,6 +15,19 @@ describe('Completions', () => {
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
             assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+        });
+    });
+
+    it('should not return SCSS functions in property value completions', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'const q = css`color:`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.isFalse(completionsResponse.body.some(item => item.name === 'darken'));
         });
     });
 
@@ -26,6 +39,19 @@ describe('Completions', () => {
             '`'
         ].join('\n'));
         server.send({ command: 'completions', arguments: { file: mockFileName, offset: 22, line: 1, prefix: '' } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
+
+    it('should return property value completions for nested selector', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'const q = css`position: relative; &:hover { color: }`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 51, line: 1, prefix: '' } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);

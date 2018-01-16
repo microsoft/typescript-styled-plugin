@@ -9,6 +9,7 @@ import * as vscode from 'vscode-languageserver-types';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator';
+import { LanguageServiceLogger } from './logger';
 
 const wrapperPre = ':root{\n';
 
@@ -59,7 +60,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     constructor(
         private readonly typescript: typeof ts,
-        private readonly configuration: TsStyledPluginConfiguration
+        private readonly configuration: TsStyledPluginConfiguration,
+        private readonly logger: LanguageServiceLogger
     ) { }
 
     private get cssLanguageService(): LanguageService {
@@ -110,8 +112,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         position: ts.LineAndCharacter
     ): ts.QuickInfo | undefined {
         const doc = this.createVirtualDocument(context);
-        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        const hover = this.cssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const hover = this.scssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
         if (hover) {
             return this.translateHover(hover, this.toVirtualDocPosition(position), context);
         }
@@ -183,8 +185,11 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         }
 
         const doc = this.createVirtualDocument(context);
-        const stylesheet = this.cssLanguageService.parseStylesheet(doc);
-        const completions = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        completionsScss.items = filterScssCompletionItems(completionsScss.items);
+        const completions = {...completionsCss, items: [...completionsCss.items, ...completionsScss.items]};
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
@@ -258,6 +263,12 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             tags: [],
         };
     }
+}
+
+function filterScssCompletionItems(
+    items: vscode.CompletionItem[]
+): vscode.CompletionItem[] {
+    return items.filter(item => (item.kind === vscode.CompletionItemKind.Function && item.label.substr(0, 1) === ':'));
 }
 
 function translateCompletionItemsToCompletionInfo(
