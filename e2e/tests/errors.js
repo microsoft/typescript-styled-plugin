@@ -155,9 +155,38 @@ describe('Errors', () => {
         });
     });
 
-    it('should not return an error for a placeholder used as a selector', () => {
+    it('should not return an error for a placeholder used as a selector (#30)', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`${"button"} { color: red;  }`')
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+    it('should not return an error for a placeholder used as a complex selector (#30)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, `
+        function css(strings, ...) { return ""; };
+        function fullWidth() { };
+        const Button = {};
+        const q = css\`
+            display: flex;
+            \${fullWidth()};
+        
+            \${Button} {
+            width: 100%;
+            
+            &:not(:first-child):not(:last-child) {
+                margin-left: 0;
+                margin-right: 0;
+                border-radius: 0;
+            }
+            }
+        \``)
         server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
 
         return server.close().then(() => {
