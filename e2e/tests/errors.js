@@ -15,7 +15,7 @@ describe('Errors', () => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
-            assert.strictEqual(error.text, 'Unknown property.');
+            assert.strictEqual(error.text, "Unknown property: 'boarder'");
             assert.strictEqual(error.start.line, 1);
             assert.strictEqual(error.start.offset, 46);
             assert.strictEqual(error.end.line, 1);
@@ -107,7 +107,7 @@ describe('Errors', () => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
-            assert.strictEqual(error.text, 'Unknown property.');
+            assert.strictEqual(error.text, "Unknown property: 'boarder'");
             assert.strictEqual(error.start.line, 3);
             assert.strictEqual(error.start.offset, 1);
             assert.strictEqual(error.end.line, 3);

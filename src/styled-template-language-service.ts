@@ -20,6 +20,11 @@ function arePositionsEqual(
     return left.line === right.line && left.character === right.character;
 }
 
+const emptyCompletionList: vscode.CompletionList = {
+    items: [],
+    isIncomplete: false
+};
+
 class CompletionsCache {
     private _cachedCompletionsFile?: string;
     private _cachedCompletionsPosition?: ts.LineAndCharacter;
@@ -186,8 +191,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
-        const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet);
+        const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet) || emptyCompletionList;
+        const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
         const completions = { ...completionsCss, items: [...completionsCss.items, ...completionsScss.items] };
         this._completionsCache.updateCached(context, position, completions);
