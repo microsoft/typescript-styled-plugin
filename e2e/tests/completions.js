@@ -72,7 +72,7 @@ describe('Completions', () => {
         });
     });
 
-    it('should return completions before where placeholder is used as property', () => {
+    it('should return completions when placeholder is used as property', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'css`color: ; boarder: 1px solid ${"red"};`');
         server.send({ command: 'completions', arguments: { file: mockFileName, offset: 11, line: 1, prefix: '' } });
@@ -188,6 +188,24 @@ describe('Completions', () => {
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
+
+    it('should return completions when placeholder is used as a selector', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, [
+            'css`${"button"} {',
+            '   color: ;',
+            '}',
+            'color: ;',
+            '`'].join('\n'));
+        server.send({ command: 'completions', arguments: { file: mockFileName, line: 2, offset: 11 } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
             assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });

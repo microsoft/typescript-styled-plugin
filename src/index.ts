@@ -40,6 +40,8 @@ export = (mod: { typescript: typeof ts }) => {
                     // if so, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
                     if (replacementChar === ' ' && templateString.slice(end).match(/^\s*;/)) {
                         result = '$a:0' + result.slice(4);
+                    } else if (templateString.slice(end).match(/^\s*\{/)) { // ${'button'} {
+                        result = 'x';
                     }
                     return result;
                 },

@@ -153,5 +153,17 @@ describe('Errors', () => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
-    })
-})
+    });
+
+    it('should not return an error for a placeholder used as a selector', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`${"button"} { color: red;  }`')
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+});
