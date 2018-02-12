@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.4.1 - February 12, 2018
+- Fixed false error when placeholder is used as a selector.
+
 # 0.4.0 - January 16, 2018
 - Fix suggestions inside of nested selectors. Thanks @aczekajski!
 
