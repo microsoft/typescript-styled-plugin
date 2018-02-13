@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.5.0 - February 12, 2018
+- Add quick fixes for misspelled property names.
+
 # 0.4.1 - February 12, 2018
 - Fixed false error when placeholder is used as a selector.
 

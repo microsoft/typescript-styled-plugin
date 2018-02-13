@@ -6,6 +6,12 @@ TypeScript server plugin that adds intellisense to [styled component](https://st
 
 [![Build Status](https://travis-ci.org/Microsoft/typescript-styled-plugin.svg?branch=master)](https://travis-ci.org/Microsoft/typescript-styled-plugin)
 
+**Features**
+
+- IntelliSense for CSS property names and values.
+- Syntax error reporting.
+- Quick fixes for misspelled property names.
+
 ## Usage
 This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), [Visual Studio](https://www.visualstudio.com), and others. 
 
