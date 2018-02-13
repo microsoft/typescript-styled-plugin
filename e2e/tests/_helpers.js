@@ -18,3 +18,7 @@ exports.getFirstResponseOfType = (command, server) => {
     assert.isTrue(response !== undefined);
     return response;
 };
+
+exports.getResponsesOfType = (command, server) => {
+    return server.responses.filter(response => response.command === command);
+};

@@ -13,11 +13,27 @@ import { LanguageServiceLogger } from './logger';
 
 const wrapperPre = ':root{\n';
 
+const cssErrorCode = 9999;
+
 function arePositionsEqual(
     left: ts.LineAndCharacter,
     right: ts.LineAndCharacter
 ): boolean {
     return left.line === right.line && left.character === right.character;
+}
+
+function isAfter(
+    left: vscode.Position,
+    right: vscode.Position
+): boolean {
+    return right.line > left.line || (right.line === left.line && right.character >= left.character);
+}
+
+function overlaps(
+    a: vscode.Range,
+    b: vscode.Range
+): boolean {
+    return !isAfter(a.end, b.start) && !isAfter(b.end, a.start);
 }
 
 const emptyCompletionList: vscode.CompletionList = {
@@ -137,6 +153,28 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             context.text).filter(x => !!x) as ts.Diagnostic[];
     }
 
+    public getSupportedCodeFixes(): number[] {
+        return [cssErrorCode];
+    }
+
+    public getCodeFixesAtPosition(
+        context: TemplateContext,
+        start: number,
+        end: number,
+        errorCodes: number[],
+        format: ts.FormatCodeSettings
+    ): ts.CodeAction[] {
+        const doc = this.createVirtualDocument(context);
+        const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const range = this.toVsRange(context, start, end);
+        const diagnostics = this.scssLanguageService.doValidation(doc, stylesheet)
+            .filter(diagnostic => overlaps(diagnostic.range, range));
+
+        return this.translateCodeActions(
+            context,
+            this.scssLanguageService.doCodeActions(doc, range, { diagnostics }, stylesheet));
+    }
+
     private createVirtualDocument(
         context: TemplateContext
     ): vscode.TextDocument {
@@ -178,6 +216,17 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     private fromVirtualDocOffset(offset: number) {
         return offset - wrapperPre.length;
+    }
+
+    private toVsRange(
+        context: TemplateContext,
+        start: number,
+        end: number
+    ): vscode.Range {
+        return {
+            start: this.toVirtualDocPosition(context.toPosition(start)),
+            end: this.toVirtualDocPosition(context.toPosition(end)),
+        };
     }
 
     private getCompletionItems(
@@ -227,7 +276,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
         const start = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.start));
         const length = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.end)) - start;
-        const code = typeof diagnostic.code === 'number' ? diagnostic.code : 9999;
+        const code = typeof diagnostic.code === 'number' ? diagnostic.code : cssErrorCode;
         return {
             code,
             messageText: diagnostic.message,
@@ -267,6 +316,45 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             documentation: contents,
             tags: [],
         };
+    }
+
+    private translateCodeActions(
+        context: TemplateContext,
+        codeActions: vscode.Command[]
+    ): ts.CodeAction[] {
+        const actions: ts.CodeAction[] = [];
+        for (const vsAction of codeActions) {
+            if (vsAction.command !== '_css.applyCodeAction') {
+                continue;
+            }
+
+            const edits = vsAction.arguments && vsAction.arguments[2] as vscode.TextEdit[];
+            if (edits) {
+                actions.push({
+                    description: vsAction.title,
+                    changes: edits.map(edit => this.translateTextEditToFileTextChange(context, edit))
+                });
+            }
+        }
+        return actions;
+    }
+
+    private translateTextEditToFileTextChange(
+        context: TemplateContext,
+        textEdit: vscode.TextEdit
+    ): ts.FileTextChanges {
+        const start = context.toOffset(this.fromVirtualDocPosition(textEdit.range.start));
+        const end = context.toOffset(this.fromVirtualDocPosition(textEdit.range.end));
+        return {
+            fileName: context.fileName,
+            textChanges: [{
+                newText: textEdit.newText,
+                span: {
+                    start: start,
+                    length: end - start
+                }
+            }]
+        }
     }
 }
 
