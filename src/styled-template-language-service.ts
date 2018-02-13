@@ -38,7 +38,7 @@ function overlaps(
 
 const emptyCompletionList: vscode.CompletionList = {
     items: [],
-    isIncomplete: false
+    isIncomplete: false,
 };
 
 class CompletionsCache {
@@ -332,7 +332,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             if (edits) {
                 actions.push({
                     description: vsAction.title,
-                    changes: edits.map(edit => this.translateTextEditToFileTextChange(context, edit))
+                    changes: edits.map(edit => this.translateTextEditToFileTextChange(context, edit)),
                 });
             }
         }
@@ -350,11 +350,11 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             textChanges: [{
                 newText: textEdit.newText,
                 span: {
-                    start: start,
-                    length: end - start
-                }
-            }]
-        }
+                    start,
+                    length: end - start,
+                },
+            }],
+        };
     }
 }
 
