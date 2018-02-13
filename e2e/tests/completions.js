@@ -209,4 +209,23 @@ describe('Completions', () => {
             assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });
+
+    it('should return completions inside of nested selector xx', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, [
+            'css`',
+            '    color: red;',
+            '    &:hover {',
+            '        color:   ',
+            '    }',
+            '`'].join('\n'));
+        server.send({ command: 'completions', arguments: { file: mockFileName, line: 4, offset: 15 } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        });
+    });
 })
