@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.5.1 - February 13, 2018
+- Small fix for suggestions inside of nested selectors.
+
 # 0.5.0 - February 12, 2018
 - Add quick fixes for misspelled property names.
 
