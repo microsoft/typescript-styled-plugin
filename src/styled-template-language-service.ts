@@ -237,13 +237,16 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         if (cached) {
             return cached;
         }
-
         const doc = this.createVirtualDocument(context);
+        const virtualPosition = this.toVirtualDocPosition(position);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const completionsCss = this.cssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet) || emptyCompletionList;
-        const completionsScss = this.scssLanguageService.doComplete(doc, this.toVirtualDocPosition(position), stylesheet) || emptyCompletionList;
+        const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
+        const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
-        const completions = { ...completionsCss, items: [...completionsCss.items, ...completionsScss.items] };
+        const completions: vscode.CompletionList = {
+            isIncomplete: false,
+            items: [...completionsCss.items, ...completionsScss.items],
+        };
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
