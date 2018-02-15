@@ -10,6 +10,7 @@ import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator';
 import { LanguageServiceLogger } from './logger';
+import { doComplete as emmetDoComplete, getEmmetCompletionParticipants} from 'vscode-emmet-helper';
 
 const wrapperPre = ':root{\n';
 
@@ -240,6 +241,11 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const doc = this.createVirtualDocument(context);
         const virtualPosition = this.toVirtualDocPosition(position);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
+        const emmetResults: vscode.CompletionList = {
+            isIncomplete: true,
+            items: []
+        }
+        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', {}, emmetResults)]);
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
@@ -247,6 +253,10 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             isIncomplete: false,
             items: [...completionsCss.items, ...completionsScss.items],
         };
+        if (emmetResults.items.length) {
+            completions.items.push(...emmetResults.items);
+            completions.isIncomplete = true;
+        }
         this._completionsCache.updateCached(context, position, completions);
         return completions;
     }
