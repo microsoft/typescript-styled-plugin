@@ -16,7 +16,9 @@ TypeScript server plugin that adds intellisense to [styled component](https://st
 This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), [Visual Studio](https://www.visualstudio.com), and others. 
 
 ### With VS Code
-To use this plugin with VS Code, first install the plugin and a copy of TypeScript in your workspace:
+Just install the [VS Code Styled Components extension](https://github.com/styled-components/vscode-styled-components). This extension adds syntax highlighting and IntelliSense for styled components in JavaScript and TypeScript files. 
+
+If you are using a [workspace version of TypeScript]((https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions)) however, you must manually install the plugin along side the version of TypeScript in your workspace:
 
 ```bash
 npm install --save-dev typescript-styled-plugin typescript
@@ -37,9 +39,6 @@ Then add a `plugins` section to your [`tsconfig.json`](http://www.typescriptlang
 ```
 
 Finally, run the `Select TypeScript version` command in VS Code to switch to use the workspace version of TypeScript for VS Code's JavaScript and TypeScript language support. You can find more information about managing typescript versions [in the VS Code documentation](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions).
-
-Also consider installing the [vscode-styled-components](https://marketplace.visualstudio.com/items?itemName=jpoissonnier.vscode-styled-components) extension to get stytax highlighting for styled components.
-
 
 ### With Sublime
 This plugin works with the [Sublime TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin).
