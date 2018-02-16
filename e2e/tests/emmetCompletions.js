@@ -4,7 +4,7 @@ const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
 const mockFileName = 'main.ts';
 
-describe('Completions', () => {
+describe('Emmet Completions', () => {
     it('should return emmet property completions for single line string', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`m10-20`');
@@ -24,7 +24,7 @@ describe('Completions', () => {
             'm10-20',
             '`'
         ].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 22, line: 1 } });
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 7, line: 2 } });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -109,7 +109,7 @@ describe('Completions', () => {
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some(item => item.name === '#121212'));
         });
     });
 
