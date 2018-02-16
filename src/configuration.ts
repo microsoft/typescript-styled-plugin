@@ -5,6 +5,7 @@ export interface TsStyledPluginConfiguration {
     tags: string[];
     validate: boolean;
     lint: { [key: string]: any };
+    emmet: { [key: string]: any };
 }
 
 export const defaultConfiguration: TsStyledPluginConfiguration = {
@@ -13,6 +14,7 @@ export const defaultConfiguration: TsStyledPluginConfiguration = {
     lint: {
         emptyRules: 'ignore',
     },
+    emmet: {}
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
@@ -21,5 +23,6 @@ export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
         tags: config.tags || defaultConfiguration.tags,
         validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
         lint,
+        emmet: config.emmet || defaultConfiguration.emmet
     };
 };
