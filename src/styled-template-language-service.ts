@@ -243,8 +243,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         const emmetResults: vscode.CompletionList = {
             isIncomplete: true,
-            items: []
-        }
+            items: [],
+        };
         this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', this.configuration.emmet, emmetResults)]);
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
@@ -476,7 +476,7 @@ function translateSeverity(
 }
 
 function toDisplayParts(
-    text: string | vscode.MarkupContent | undefined 
+    text: string | vscode.MarkupContent | undefined
 ): ts.SymbolDisplayPart[] {
     if (text && typeof text !== 'string') {
         return [{text: text.value, kind: 'text'}];
