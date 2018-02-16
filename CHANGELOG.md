@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.6.0 - February 16, 2018
+- Added emmet suggestions. Thanks @ramya-rao-a!
+
 # 0.5.1 - February 13, 2018
 - Small fix for suggestions inside of nested selectors.
 
