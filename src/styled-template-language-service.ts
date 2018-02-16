@@ -478,8 +478,11 @@ function translateSeverity(
 function toDisplayParts(
     text: string | vscode.MarkupContent | undefined
 ): ts.SymbolDisplayPart[] {
-    if (text && typeof text !== 'string') {
-        return [{text: text.value, kind: 'text'}];
+    if (!text) {
+        return [];
     }
-    return text ? [{ text, kind: 'text' }] : [];
+    return [{
+        kind: 'text',
+        text: typeof text === 'string' ? text : text.value,
+    }];
 }
