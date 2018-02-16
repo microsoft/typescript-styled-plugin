@@ -276,6 +276,7 @@ No unit for zero needed. Default is `"ignore"`.
 ```
 "ignore" | "warning" | "error"
 ```
+
 @font-face rule must define 'src' and 'font-family' properties. Default is `"warning"`.
 
 #### hexColorLength
@@ -303,12 +304,14 @@ Unknown property. Default is `"warning"`.
 ```
 "ignore" | "warning" | "error"
 ```
+
 IE hacks are only necessary when supporting IE7 and older. Default is `"ignore"`.
 
 #### unknownVendorSpecificProperties
 ```
 "ignore" | "warning" | "error"
 ```
+
 Unknown vendor specific property. Default is `"ignore"`.
 
 #### propertyIgnoredDueToDisplay
@@ -358,6 +361,7 @@ Controls whether or not expanded Emmet abbreviations should show up in the compl
 ```
 `true` | `false`
 ```
+
 If true, then Emmet suggestions will show up as snippets allowing you to order them as per editor.snippetSuggestions setting.
 
 #### preferences
