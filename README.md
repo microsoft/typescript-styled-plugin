@@ -340,6 +340,31 @@ Avoid using 'float'. Floats lead to fragile CSS that is easy to break if one asp
 
 Selectors should not contain IDs because these rules are too tightly coupled with the HTML. Default is `"ignore"`.
 
+### Emmet in completion list
+
+You can now see your Emmet abbreviations expanded and included in the completion list. 
+An [upstream issue](https://github.com/Microsoft/TypeScript/issues/21999) with typescript blocks the Emmet entry in the completion list to get updated as you type. 
+So for now you will have to press `Ctrl+Space` after typing out the abbreviation.
+
+The below settings which are in sync with general Emmet settings in VS Code control the expanded Emmet abbreviations in the auto-completion list. 
+
+#### showExpandedAbbreviation
+```
+"always" | "never"
+```
+
+Controls whether or not expanded Emmet abbreviations should show up in the completion list
+
+#### showSuggestionsAsSnippets
+```
+`true` | `false`
+```
+If true, then Emmet suggestions will show up as snippets allowing you to order them as per editor.snippetSuggestions setting.
+
+#### preferences
+
+Preferences used to modify behavior of some actions and resolvers of Emmet.
+
 
 ## Contributing
 

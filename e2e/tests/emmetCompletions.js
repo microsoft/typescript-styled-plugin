@@ -5,6 +5,17 @@ const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 const mockFileName = 'main.ts';
 
 describe('Emmet Completions', () => {
+    it('shouldnt return emmet property completions when disabled', () => {
+        const server = createServer('disabled-emmet-project-fixture');
+        openMockFile(server, mockFileName, 'const q = css`m10-20`');
+        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1 } });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.body.every(item => item.name !== 'margin: 10px 20px;'));
+        });
+    });
+
     it('should return emmet property completions for single line string', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`m10-20`');

@@ -4,14 +4,14 @@ const fs = require('fs');
 const readline = require('readline');
 
 class TSServer {
-    constructor() {
+    constructor(project) {
         const logfile = path.join(__dirname, 'log.txt');
         const tsserverPath = path.join(__dirname, '..', 'node_modules', 'typescript', 'lib', 'tsserver');
         const server = fork(tsserverPath, [
             '--logVerbosity', 'verbose',
             '--logFile', logfile
         ], {
-                cwd: path.join(__dirname, '..', 'project-fixture'),
+                cwd: path.join(__dirname, '..', project),
                 stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
             });
         this._exitPromise = new Promise((resolve, reject) => {
@@ -48,8 +48,8 @@ class TSServer {
     }
 }
 
-function createServer() {
-    return new TSServer();
+function createServer(project) {
+    return new TSServer(project || 'project-fixture');
 }
 
 module.exports = createServer;

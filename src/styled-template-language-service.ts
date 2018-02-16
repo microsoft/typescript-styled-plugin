@@ -245,7 +245,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             isIncomplete: true,
             items: []
         }
-        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', {}, emmetResults)]);
+        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', this.configuration.emmet, emmetResults)]);
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
