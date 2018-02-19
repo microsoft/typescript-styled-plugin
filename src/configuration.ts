@@ -14,7 +14,9 @@ export const defaultConfiguration: TsStyledPluginConfiguration = {
     lint: {
         emptyRules: 'ignore',
     },
-    emmet: {}
+    emmet: {
+        showExpandedAbbreviation: 'never'
+    }
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
