@@ -9,7 +9,7 @@ export interface TsStyledPluginConfiguration {
 }
 
 export const defaultConfiguration: TsStyledPluginConfiguration = {
-    tags: ['styled', 'css', 'extend'],
+    tags: ['styled', 'css', 'extend', 'injectGlobal'],
     validate: true,
     lint: {
         emptyRules: 'ignore',
