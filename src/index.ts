@@ -32,17 +32,17 @@ export = (mod: { typescript: typeof ts }) => {
                     // if in-property, replace with "xxxxxx"
                     // if a mixin, replace with "      "
                     const pre = templateString.slice(0, start);
-                    const replacementChar = pre.match(/(^|\n)\s*$/g) ? ' ' : 'x';
 
-                    let result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
+                    const replacementChar = pre.match(/(^|\n)\s*$/g) && !templateString.slice(end).match(/^\s*\{/) /* ${'button'} */ ? ' ' : 'x';
+
+                    const result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
 
                     // check if it's a mixin and if followed by a semicolon
                     // if so, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
                     if (replacementChar === ' ' && templateString.slice(end).match(/^\s*;/)) {
-                        result = '$a:0' + result.slice(4);
-                    } else if (templateString.slice(end).match(/^\s*\{/)) { // ${'button'} {
-                        result = 'x';
+                        return '$a:0' + result.slice(4);
                     }
+
                     return result;
                 },
             }, { logger });

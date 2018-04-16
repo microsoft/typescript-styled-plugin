@@ -195,4 +195,37 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error for a placeholder used as selector part (#39)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const Content = "button"; const q = css`& > ${Content} { margin-left: 1px; }`')
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+    it('should not return an error for a placeholder in multiple properties (#39)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, `function css(strings, ...) { return ""; }; const Content = "button"; const q = css\`
+            & > $\{'content'} {
+                color: 1px;
+            }
+
+            & > $\{'styledNavBar'} {
+                margin-left: $\{1};
+            }
+        \``)
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 });
+
