@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.6.1 - April 16, 2018
+- Fixed some cases where placeholder usage was incorrectly reported as an error.
+
 # 0.6.0 - February 16, 2018
 - Added emmet suggestions. Thanks @ramya-rao-a!
 
