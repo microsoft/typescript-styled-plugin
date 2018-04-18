@@ -227,5 +227,60 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error for a placeholder that spans multiple lines (#44)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, `let css: any = {}; const q = css.a\`
+  color:
+    $\{'transparent'};
+  border-bottom: 1px;
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+        \``)
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+
+    it('should not return an error for complicated style (#44)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, `let css: any = {}; const q = css.a\`
+  display: flex;
+  width: 6rem;
+  height: 5rem;
+  margin-right: -3px;
+  border-right: 3px solid
+    $\{({ active, theme: { colors } }) =>
+                active ? colors.yellow : 'transparent'};
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  font-weight: bold;
+  font-size: 0.875rem;
+  color: white;
+  cursor: pointer;
+  &:not([href]):not([tabindex]) {
+    color: white;
+  }
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+\``)
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
 });
 
