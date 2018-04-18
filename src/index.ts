@@ -50,7 +50,7 @@ export = (mod: { typescript: typeof ts }) => {
                         // styled.x`
                         //     color: ${'red'};
                         // `
-                        if (pre.match(/(;|^|\})[\s|\n]*$$/)) {
+                        if (pre.match(/(;|^|\})[\s|\n]*$/)) {
                             // Mixin, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
                             return '$a:0' + result.slice(4); // replace(/./gm, c => c === '\n' ? '\n' : ' ');
                         }
