@@ -1,17 +1,25 @@
+// @ts-check
 const assert = require('chai').assert;
 const createServer = require('../server-fixture');
 const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
 const mockFileName = 'main.ts';
 
+const getSemanticDiagnosticsForFile = (fileContents) => {
+    const server = createServer();
+    openMockFile(server, mockFileName, fileContents);
+    server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+    return server.close().then(errorResponse => {
+        return getFirstResponseOfType('semanticDiagnosticsSync', server);
+    });
+}
+
 describe('Errors', () => {
     it('should return error for unknown property', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css`boarder: 1px solid black;`');
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(x) { return x; }; const q = css`boarder: 1px solid black;`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
@@ -24,63 +32,47 @@ describe('Errors', () => {
     });
 
     it('should not return errors for empty rulesets', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css``');
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(x) { return x; }; const q = css``'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return errors for nested rulesets', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(x) { return x; }; const q = css`&:hover { border: 1px solid black; }`');
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(x) { return x; }; const q = css`&:hover { border: 1px solid black; }`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder in a property', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`')
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(strings, ...) { return ""; }; const q = css`color: ${"red"};`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder in a property with a multiline string', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        return getSemanticDiagnosticsForFile([
             'function css(strings, ...) { return ""; }; const q = css`',
             '    color: ${"red"};',
-            '`'].join('\n'));
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            '`'].join('\n')
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should return errors when error occures in last position', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`;`')
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(strings, ...) { return ""; }; const q = css`;`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
@@ -93,17 +85,13 @@ describe('Errors', () => {
     });
 
     it('should return error for multiline unknown property #20', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        return getSemanticDiagnosticsForFile([
             'function css(x) { return x; };',
             'const q = css`',
             'boarder: 1px solid black;',
             '`'
-            ].join('\n'));
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        ].join('\n')
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 1);
             const error = errorResponse.body[0];
@@ -116,9 +104,7 @@ describe('Errors', () => {
     });
 
     it('should not error with interpolation at start, followed by semicolon #22', () => {
-        const server = createServer();
-
-        const lines = [
+        return getSemanticDiagnosticsForFile([
             "function css(...args){}",
             "const mixin = ''",
 
@@ -142,34 +128,24 @@ describe('Errors', () => {
             "  ${mixin};;; ;; ;",
             "  color: blue;",
             "`",
-        ];
-
-        openMockFile(server, mockFileName, lines.join('\n'));
-
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        ].join('\n')
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder used as a selector (#30)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const q = css`${"button"} { color: red;  }`')
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(strings, ...) { return ""; }; const q = css`${"button"} { color: red;  }`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder used as a complex selector (#30)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, `
+        return getSemanticDiagnosticsForFile(`
         function css(strings, ...) { return ""; };
         function fullWidth() { };
         const Button = {};
@@ -186,31 +162,25 @@ describe('Errors', () => {
                 border-radius: 0;
             }
             }
-        \``)
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        \``
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder used as selector part (#39)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'function css(strings, ...) { return ""; }; const Content = "button"; const q = css`& > ${Content} { margin-left: 1px; }`')
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        return getSemanticDiagnosticsForFile(
+            'function css(strings, ...) { return ""; }; const Content = "button"; const q = css`& > ${Content} { margin-left: 1px; }`'
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder in multiple properties (#39)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, `function css(strings, ...) { return ""; }; const Content = "button"; const q = css\`
+        return getSemanticDiagnosticsForFile(
+            `function css(strings, ...) { return ""; }; const Content = "button"; const q = css\`
             & > $\{'content'} {
                 color: 1px;
             }
@@ -218,19 +188,16 @@ describe('Errors', () => {
             & > $\{'styledNavBar'} {
                 margin-left: $\{1};
             }
-        \``)
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        \``
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder that spans multiple lines (#44)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, `let css: any = {}; const q = css.a\`
+        return getSemanticDiagnosticsForFile(
+            `let css: any = {}; const q = css.a\`
   color:
     $\{'transparent'};
   border-bottom: 1px;
@@ -239,11 +206,8 @@ describe('Errors', () => {
     text-decoration: none;
   }
 }
-        \``)
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        \``
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
@@ -251,8 +215,8 @@ describe('Errors', () => {
 
 
     it('should not return an error for complicated style (#44)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, `let css: any = {}; const q = css.a\`
+        return getSemanticDiagnosticsForFile(
+            `let css: any = {}; const q = css.a\`
   display: flex;
   width: 6rem;
   height: 5rem;
@@ -272,29 +236,22 @@ describe('Errors', () => {
     color: inherit;
     text-decoration: none;
   }
-\``)
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+\``
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
     it('should not return an error for a placeholder value followed by unit (#48)', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, `function css(strings, ...) { return ""; }; const value = 1; const q = css\`
+        return getSemanticDiagnosticsForFile(
+            `function css(strings, ...) { return ""; }; const value = 1; const q = css\`
             width: $\{value}%;
-        \``)
-        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
-
-        return server.close().then(() => {
-            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+        \``
+        ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
-
 });
 
