@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.6.3 - April 20, 2018
+- Fixed `width: ${1}%;` incorrectly reported as an error.
+
 # 0.6.2 - April 18, 2018
 - Fixed case where a placeholder that looked like a mixin was incorrectly reported as an error.
 
