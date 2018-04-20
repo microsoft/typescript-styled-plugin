@@ -33,8 +33,7 @@ export = (mod: { typescript: typeof ts }) => {
                     // if a mixin, replace with "      "
                     const pre = templateString.slice(0, start);
                     const post = templateString.slice(end);
-                    const replacementChar = pre.match(/(^|\n)\s*$/g) && !post.match(/^\s*\{/) /* ${'button'} */ ? ' ' : 'x';
-
+                    const replacementChar = getReplacementCharacter(pre, post, logger);
                     const result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
 
                     // If followed by a semicolon, we may have to eat the semi colon using a false property
@@ -63,3 +62,20 @@ export = (mod: { typescript: typeof ts }) => {
         },
     };
 };
+
+function getReplacementCharacter(pre: string, post: string, logger: LanguageServiceLogger) {
+    if (pre.match(/(^|\n)\s*$/g)) {
+        if (!post.match(/^\s*\{/)) {  // ${'button'} {
+            return ' ';
+        }
+    }
+
+    // If the placeholder looks like a unit that would not work when replaced with an identifier,
+    // try replaceing with a number.
+    if (post.match(/^(%)/)) {
+        return '0';
+    }
+
+    // Otherwise replace with an identifier
+    return 'x';
+}

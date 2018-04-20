@@ -282,5 +282,19 @@ describe('Errors', () => {
         });
     });
 
+    it('should not return an error for a placeholder value followed by unit (#48)', () => {
+        const server = createServer();
+        openMockFile(server, mockFileName, `function css(strings, ...) { return ""; }; const value = 1; const q = css\`
+            width: $\{value}%;
+        \``)
+        server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+
+        return server.close().then(() => {
+            const errorResponse = getFirstResponseOfType('semanticDiagnosticsSync', server);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
 });
 
