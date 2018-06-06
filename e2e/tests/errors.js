@@ -1,16 +1,17 @@
 // @ts-check
 const assert = require('chai').assert;
+const path = require('path');
 const createServer = require('../server-fixture');
 const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
-const mockFileName = 'main.ts';
+const mockFileName = path.join(__dirname, '..', 'project-fixture', 'main.ts');
 
 const getSemanticDiagnosticsForFile = (fileContents) => {
     const server = createServer();
     openMockFile(server, mockFileName, fileContents);
-    server.send({ command: 'semanticDiagnosticsSync', arguments: { file: mockFileName } });
+    server.sendCommand('semanticDiagnosticsSync', { file: mockFileName });
 
-    return server.close().then(errorResponse => {
+    return server.close().then(_ => {
         return getFirstResponseOfType('semanticDiagnosticsSync', server);
     });
 }

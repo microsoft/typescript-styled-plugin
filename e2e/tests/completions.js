@@ -1,14 +1,20 @@
 const assert = require('chai').assert;
+const path = require('path');
 const createServer = require('../server-fixture');
 const { openMockFile, getFirstResponseOfType } = require('./_helpers');
 
-const mockFileName = 'main.ts';
+const mockFileName = path.join(__dirname, '..', 'project-fixture', 'main.ts');
+
+const createServerWithMockFile = (fileContents) => {
+    const server = createServer();
+    openMockFile(server, mockFileName, fileContents);
+    return server;
+}
 
 describe('Completions', () => {
     it('should return property value completions for single line string', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'const q = css`color:`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1 } });
+        const server = createServerWithMockFile('const q = css`color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 21, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -20,9 +26,8 @@ describe('Completions', () => {
     });
 
     it('should not return SCSS functions in property value completions', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'const q = css`color:`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 21, line: 1 } });
+        const server = createServerWithMockFile('const q = css`color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 21, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -32,13 +37,12 @@ describe('Completions', () => {
     });
 
     it('should return property value completions for multiline string', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        const server = createServerWithMockFile([
             'const q = css`',
             'color:',
             '`'
         ].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 22, line: 1 } });
+        server.sendCommand('completions', { file: mockFileName, offset: 22, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -49,9 +53,8 @@ describe('Completions', () => {
     });
 
     it('should return property value completions for nested selector', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'const q = css`position: relative; &:hover { color: }`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 51, line: 1 } });
+        const server = createServerWithMockFile('const q = css`position: relative; &:hover { color: }`');
+        server.sendCommand('completions', { file: mockFileName, offset: 51, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -62,20 +65,19 @@ describe('Completions', () => {
     });
 
     it('should not return css completions on tag', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css.``');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 5, line: 1 } });
+        const server = createServerWithMockFile('css.``');
+        server.sendCommand('completions', { file: mockFileName, offset: 5, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
-            assert.isFalse(completionsResponse.success);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 0);
         });
     });
 
     it('should return completions when placeholder is used as property', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css`color: ; boarder: 1px solid ${"red"};`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 11, line: 1 } });
+        const server = createServerWithMockFile('css`color: ; boarder: 1px solid ${"red"};`');
+        server.sendCommand('completions', { file: mockFileName, offset: 11, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -86,9 +88,8 @@ describe('Completions', () => {
     });
 
     it('should return completions after where placeholder is used as property', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css`border: 1px solid ${"red"}; color:`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 39, line: 1 } });
+        const server = createServerWithMockFile('css`border: 1px solid ${"red"}; color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 39, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -99,9 +100,8 @@ describe('Completions', () => {
     });
 
     it('should return completions between were placeholders are used as properties', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `')
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 40, line: 1 } });
+        const server = createServerWithMockFile('css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `')
+        server.sendCommand('completions', { file: mockFileName, offset: 40, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -112,9 +112,8 @@ describe('Completions', () => {
     });
 
     it('should return completions on tagged template string with placeholder using dotted tag', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css.x`color: ; boarder: 1px solid ${"red"};`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 13, line: 1 } });
+        const server = createServerWithMockFile('css.x`color: ; boarder: 1px solid ${"red"};`');
+        server.sendCommand('completions', { file: mockFileName, offset: 13, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -125,9 +124,8 @@ describe('Completions', () => {
     });
 
     it('should return js completions inside placeholder', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'const abc = 123; css`color: ${};`')
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 31, line: 1 } });
+        const server = createServerWithMockFile('const abc = 123; css`color: ${};`')
+        server.sendCommand('completions', { file: mockFileName, offset: 31, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -137,9 +135,8 @@ describe('Completions', () => {
     });
 
     it('should return js completions at end of placeholder', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'css`color: ${"red".};`');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 20, line: 1 } });
+        const server = createServerWithMockFile('css`color: ${"red".};`');
+        server.sendCommand('completions', { file: mockFileName, offset: 20, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -149,9 +146,8 @@ describe('Completions', () => {
     });
 
     it('should return styled completions inside of nested placeholder', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, 'styled`background: red; ${(() => css`color:`)()}`;');
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 44, line: 1 } });
+        const server = createServerWithMockFile('styled`background: red; ${(() => css`color:`)()}`;');
+        server.sendCommand('completions', { file: mockFileName, offset: 44, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -161,12 +157,11 @@ describe('Completions', () => {
     });
 
     it('should handle multiline value placeholder correctly ', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        const server = createServerWithMockFile([
             'css`margin: ${',
             '0',
             "}; color: `"].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 10, line: 3 } });
+        server.sendCommand('completions', { file: mockFileName, offset: 10, line: 3 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -176,14 +171,13 @@ describe('Completions', () => {
     });
 
     it('should handle multiline rule placeholder correctly ', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        const server = createServerWithMockFile([
             'css`',
             '${',
             'css`margin: 0;`',
             '}',
             'color: `'].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, offset: 8, line: 5 } });
+        server.sendCommand('completions', { file: mockFileName, offset: 8, line: 5 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -193,14 +187,13 @@ describe('Completions', () => {
     });
 
     it('should return completions when placeholder is used as a selector', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        const server = createServerWithMockFile([
             'css`${"button"} {',
             '   color: ;',
             '}',
             'color: ;',
             '`'].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, line: 2, offset: 11 } });
+        server.sendCommand('completions', { file: mockFileName, line: 2, offset: 11 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -211,15 +204,14 @@ describe('Completions', () => {
     });
 
     it('should return completions inside of nested selector xx', () => {
-        const server = createServer();
-        openMockFile(server, mockFileName, [
+        const server = createServerWithMockFile([
             'css`',
             '    color: red;',
             '    &:hover {',
             '        color:   ',
             '    }',
             '`'].join('\n'));
-        server.send({ command: 'completions', arguments: { file: mockFileName, line: 4, offset: 15 } });
+        server.sendCommand('completions', { file: mockFileName, line: 4, offset: 15 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
@@ -228,4 +220,4 @@ describe('Completions', () => {
             assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });
-})
+});

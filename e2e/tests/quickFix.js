@@ -1,25 +1,22 @@
 // @ts-check
-
 const assert = require('chai').assert;
+const path = require('path');
 const createServer = require('../server-fixture');
 const { openMockFile, getFirstResponseOfType, getResponsesOfType } = require('./_helpers');
 
-const mockFileName = 'main.ts';
+const mockFileName = path.join(__dirname, '..', 'project-fixture', 'main.ts');
 
 describe('QuickFix', () => {
     it('should return quickFix for misspelled properties fooa', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`boarder: 1px solid black;`');
-        server.send({
-            command: 'getCodeFixes',
-            arguments: {
-                file: mockFileName,
-                startLine: 1,
-                startOffset: 16,
-                endLine: 1,
-                endOffset: 16,
-                errorCodes: [9999]
-            }
+        server.sendCommand('getCodeFixes', {
+            file: mockFileName,
+            startLine: 1,
+            startOffset: 16,
+            endLine: 1,
+            endOffset: 16,
+            errorCodes: [9999]
         });
 
         return server.close().then(() => {
@@ -33,16 +30,13 @@ describe('QuickFix', () => {
     it('should not return quickFixes for correctly spelled properties', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`border: 1px solid black;`');
-        server.send({
-            command: 'getCodeFixes',
-            arguments: {
-                file: mockFileName,
-                startLine: 1,
-                startOffset: 16,
-                endLine: 1,
-                endOffset: 16,
-                errorCodes: [9999]
-            }
+        server.sendCommand('getCodeFixes', {
+            file: mockFileName,
+            startLine: 1,
+            startOffset: 16,
+            endLine: 1,
+            endOffset: 16,
+            errorCodes: [9999]
         });
 
         return server.close().then(() => {
@@ -55,28 +49,22 @@ describe('QuickFix', () => {
     it('should only return spelling quickFix when range includes misspelled property', () => {
         const server = createServer();
         openMockFile(server, mockFileName, 'const q = css`boarder: 1px solid black;`');
-        server.send({
-            command: 'getCodeFixes',
-            arguments: {
-                file: mockFileName,
-                startLine: 1,
-                startOffset: 14,
-                endLine: 1,
-                endOffset: 14,
-                errorCodes: [9999]
-            }
+        server.sendCommand('getCodeFixes', {
+            file: mockFileName,
+            startLine: 1,
+            startOffset: 14,
+            endLine: 1,
+            endOffset: 14,
+            errorCodes: [9999]
         });
 
-        server.send({
-            command: 'getCodeFixes',
-            arguments: {
-                file: mockFileName,
-                startLine: 1,
-                startOffset: 22,
-                endLine: 1,
-                endOffset: 22,
-                errorCodes: [9999]
-            }
+        server.sendCommand('getCodeFixes', {
+            file: mockFileName,
+            startLine: 1,
+            startOffset: 22,
+            endLine: 1,
+            endOffset: 22,
+            errorCodes: [9999]
         });
 
         return server.close().then(() => {
