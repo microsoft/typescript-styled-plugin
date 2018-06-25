@@ -3,11 +3,11 @@
 //
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
+import { decorateWithTemplateLanguageService } from 'typescript-template-language-service-decorator';
 import * as ts from 'typescript/lib/tsserverlibrary';
-import StyledTemplateLanguageService from './styled-template-language-service';
-import { decorateWithTemplateLanguageService, Logger } from 'typescript-template-language-service-decorator';
 import { loadConfiguration } from './configuration';
 import { LanguageServiceLogger } from './logger';
+import StyledTemplateLanguageService from './styled-template-language-service';
 
 export = (mod: { typescript: typeof ts }) => {
     return {
