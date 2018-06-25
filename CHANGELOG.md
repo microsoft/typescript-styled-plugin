@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.7.0 - June 25, 2018
+- Picked up new CSS version. Brings improved suggestions and better documentation.
+
 # 0.6.3 - April 20, 2018
 - Fixed `width: ${1}%;` incorrectly reported as an error.
 
