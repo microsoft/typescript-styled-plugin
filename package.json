@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "typescript-template-language-service-decorator": "^1.2.0",
-    "vscode-css-languageservice": "^3.0.8",
-    "vscode-languageserver-types": "^3.6.0-next.1",
-    "vscode-emmet-helper": "1.1.36"
+    "vscode-css-languageservice": "^3.0.9-next.19",
+    "vscode-languageserver-types": "^3.8.2",
+    "vscode-emmet-helper": "1.2.10"
   },
   "files": [
     "lib"
