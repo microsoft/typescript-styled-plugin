@@ -220,4 +220,29 @@ describe('Completions', () => {
             assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         });
     });
+
+    it('should support tag that is a function call', () => {
+        const server = createServerWithMockFile('const q = css("bla")`color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 28, line: 1 });
+
+        return server.close().then(() => {
+            const completionsResponse = getFirstResponseOfType('completions', server);
+            assert.isTrue(completionsResponse.success);
+            assert.strictEqual(completionsResponse.body.length, 157);
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+        });
+    });
+
+    it('should support tag that is a templated function call', async () => {
+        const server = createServerWithMockFile("const q = css<number>('bla')`color:`");
+        server.sendCommand('completions', { file: mockFileName, offset: 36, line: 1 });
+
+        await server.close();
+        const completionsResponse = getFirstResponseOfType('completions', server);
+        assert.isTrue(completionsResponse.success);
+        assert.strictEqual(completionsResponse.body.length, 157);
+        assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+        assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+    });
 });
