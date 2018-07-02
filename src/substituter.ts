@@ -3,11 +3,25 @@
 
 import { LanguageServiceLogger } from './logger';
 
+export function getSubstitutions(
+    contents: string,
+    spans: ReadonlyArray<{ start: number, end: number }>
+): string {
+    const parts: string[] = [];
+    let lastIndex = 0;
+    for (const span of spans) {
+        parts.push(contents.slice(lastIndex, span.start));
+        parts.push(getSubstitution(contents, span.start, span.end));
+        lastIndex = span.end;
+    }
+    parts.push(contents.slice(lastIndex));
+    return parts.join('');
+}
+
 export function getSubstitution(
     templateString: string,
     start: number,
-    end: number,
-    logger: LanguageServiceLogger
+    end: number
 ): string {
     const placeholder = templateString.slice(start, end);
 
@@ -17,7 +31,7 @@ export function getSubstitution(
     // if a mixin, replace with "      "
     const pre = templateString.slice(0, start);
     const post = templateString.slice(end);
-    const replacementChar = getReplacementCharacter(pre, post, logger);
+    const replacementChar = getReplacementCharacter(pre, post);
     const result = placeholder.replace(/./gm, c => c === '\n' ? '\n' : replacementChar);
 
     // If followed by a semicolon, we may have to eat the semi colon using a false property
@@ -45,8 +59,7 @@ export function getSubstitution(
 
 function getReplacementCharacter(
     pre: string,
-    post: string,
-    logger: LanguageServiceLogger
+    post: string
 ) {
     if (pre.match(/(^|\n)\s*$/g)) {
         if (!post.match(/^\s*[\{\:]/)) {  // ${'button'} {

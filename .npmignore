@@ -1,0 +1,11 @@
+node_modules/
+*.log
+*.swp
+*.swo
+.DS_Store
+*.log
+log.txt
+
+test-workspace
+e2e
+*.test.js

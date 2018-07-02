@@ -29,6 +29,8 @@
     "lib"
   ],
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.4",
     "@types/node": "^7.0.22",
     "chai": "^4.1.2",
     "glob": "^7.1.2",
@@ -43,6 +45,7 @@
     "compile": "./node_modules/.bin/tsc -p .",
     "watch:compile": "./node_modules/.bin/tsc --watch -p .",
     "e2e": "./node_modules/.bin/mocha e2e/tests --slow 2000 --timeout 10000",
-    "lint": "./node_modules/.bin/tslint -c tslint.json -p tsconfig.json"
+    "lint": "./node_modules/.bin/tslint -c tslint.json -p tsconfig.json",
+    "unit": "./node_modules/.bin/mocha lib/test"
   }
 }

@@ -29,7 +29,7 @@ class LanguageServiceFactory {
                 start: number,
                 end: number
             ): string {
-                return getSubstitution(templateString, start, end, logger);
+                return getSubstitution(templateString, start, end);
             },
         }, { logger });
     }
