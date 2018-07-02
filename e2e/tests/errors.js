@@ -254,5 +254,16 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error for a placeholder as the declaration name (#52)', () => {
+        return getSemanticDiagnosticsForFile(
+            `function css(strings, ...) { return ""; }; const value = 1; const q = css\`
+            $\{'width'}: 1px;
+        \``
+        ).then(errorResponse => {
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 });
 

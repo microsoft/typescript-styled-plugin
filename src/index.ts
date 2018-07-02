@@ -10,25 +10,29 @@ import { LanguageServiceLogger } from './logger';
 import StyledTemplateLanguageService from './styled-template-language-service';
 import { getSubstitution } from './substituter';
 
-export = (mod: { typescript: typeof ts }) => {
-    return {
-        create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-            const logger = new LanguageServiceLogger(info);
-            const config = loadConfiguration(info.config);
+class LanguageServiceFactory {
+    public constructor(
+        private readonly typescript: typeof ts
+    ) { }
 
-            logger.log('config: ' + JSON.stringify(config));
+    public create(info: ts.server.PluginCreateInfo): ts.LanguageService {
+        const logger = new LanguageServiceLogger(info);
+        const config = loadConfiguration(info.config);
 
-            return decorateWithTemplateLanguageService(mod.typescript, info.languageService, new StyledTemplateLanguageService(mod.typescript, config, logger), {
-                tags: config.tags,
-                enableForStringWithSubstitutions: true,
-                getSubstitution(
-                    templateString: string,
-                    start: number,
-                    end: number
-                ): string {
-                    return getSubstitution(templateString, start, end, logger);
-                },
-            }, { logger });
-        },
-    };
-};
+        logger.log('config: ' + JSON.stringify(config));
+
+        return decorateWithTemplateLanguageService(this.typescript, info.languageService, new StyledTemplateLanguageService(this.typescript, config, logger), {
+            tags: config.tags,
+            enableForStringWithSubstitutions: true,
+            getSubstitution(
+                templateString: string,
+                start: number,
+                end: number
+            ): string {
+                return getSubstitution(templateString, start, end, logger);
+            },
+        }, { logger });
+    }
+}
+
+export = (mod: { typescript: typeof ts }) => new LanguageServiceFactory(mod.typescript);
