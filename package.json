@@ -33,7 +33,7 @@
     "chai": "^4.1.2",
     "glob": "^7.1.2",
     "mocha": "^5.2.0",
-    "tslint": "^5.3.2",
+    "tslint": "^5.10.0",
     "typescript": "^2.6.2"
   },
   "peerDependencies": {
@@ -42,6 +42,7 @@
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",
     "watch:compile": "./node_modules/.bin/tsc --watch -p .",
-    "e2e": "./node_modules/.bin/mocha e2e/tests --slow 2000 --timeout 10000"
+    "e2e": "./node_modules/.bin/mocha e2e/tests --slow 2000 --timeout 10000",
+    "lint": "./node_modules/.bin/tslint -c tslint.json -p tsconfig.json"
   }
 }

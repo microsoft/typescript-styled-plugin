@@ -83,7 +83,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     constructor(
         private readonly typescript: typeof ts,
         private readonly configuration: TsStyledPluginConfiguration,
-        private readonly logger: LanguageServiceLogger
+        private readonly logger: LanguageServiceLogger // tslint:disable-line
     ) { }
 
     private get cssLanguageService(): LanguageService {

@@ -14,7 +14,7 @@ export const defaultConfiguration: TsStyledPluginConfiguration = {
     lint: {
         emptyRules: 'ignore',
     },
-    emmet: {}
+    emmet: {},
 };
 
 export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
@@ -23,6 +23,6 @@ export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
         tags: config.tags || defaultConfiguration.tags,
         validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
         lint,
-        emmet: config.emmet || defaultConfiguration.emmet
+        emmet: config.emmet || defaultConfiguration.emmet,
     };
 };
