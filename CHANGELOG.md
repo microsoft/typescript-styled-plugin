@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.8.0 - July 2, 2018
+- Support for emotion style typescript declarations.
+
 # 0.7.0 - June 25, 2018
 - Picked up new CSS version. Brings improved suggestions and better documentation.
 
