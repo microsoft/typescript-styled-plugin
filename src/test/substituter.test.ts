@@ -49,6 +49,15 @@ describe('substituter', () => {
         );
     });
 
+    it('should add a zero for percent units', () => {
+        assert.deepEqual(
+            performSubstitutions(
+                'width: ${10}%;'
+            ),
+            'width: 00000%;'
+        );
+    });
+
     it.skip('should replace entire property when placeholder is used in name', () => {
         assert.deepEqual(
             performSubstitutions([
@@ -60,6 +69,21 @@ describe('substituter', () => {
                 'width: 1px;',
                 `           `,
                 'color: red;',
+            ].join('\n')
+        );
+    });
+
+    it('should insert x for placeholder used as rule', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                '${"button"} {',
+                'color: ${"red"};',
+                '}',
+            ].join('\n')),
+            [
+                'xxxxxxxxxxx {',
+                'color: xxxxxxxx;',
+                '}',
             ].join('\n')
         );
     });
