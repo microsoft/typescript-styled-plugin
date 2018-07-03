@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.8.1 - July 2, 2018
+- Fix some false error reports around creative uses of placeholders.
+
 # 0.8.0 - July 2, 2018
 - Support for emotion style typescript declarations.
 
