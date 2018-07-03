@@ -278,5 +278,21 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error placeholder used as entire property within nested (#54)', () => {
+        return getSemanticDiagnosticsForFile(
+            `function css(strings, ...) { return ""; }; const q = css\`
+                &.buu-foo {
+                    \${'baseShape'};
+                    &.active {
+                        font-size: 2rem;
+                    }
+                }
+            \``
+        ).then(errorResponse => {
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 });
 

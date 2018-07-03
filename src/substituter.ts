@@ -47,7 +47,7 @@ function getSubstitution(
         // styled.x`
         //     color: ${'red'};
         // `
-        if (context.pre.match(/(;|^|\})[\s|\n]*$/)) {
+        if (context.pre.match(/(;|^|\}|\{)[\s|\n]*$/)) {
             // Mixin, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
             return '$a:0' + result.slice(4);
         }
@@ -61,7 +61,7 @@ function getSubstitution(
     // `
     //
     // Replace with fake property name
-    if (context.post.match(/^\s*:/)) {
+    if (context.post.match(/^\s*[:]/)) {
         return '$a' + result.slice(2);
     }
 

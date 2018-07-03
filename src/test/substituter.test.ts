@@ -102,6 +102,28 @@ describe('substituter', () => {
             ].join('\n')
         );
     });
+
+    it('should fake out property name when inside nested rule (#54)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                '&.buu-foo {',
+                '  \${"baseShape"};',
+                '  &.active {',
+                '    font-size: 2rem;',
+                '  }',
+                '}',
+            ].join('\n')),
+            [
+                '&.buu-foo {',
+                '  $a:0          ;',
+                '  &.active {',
+                '    font-size: 2rem;',
+                '  }',
+                '}',
+            ].join('\n')
+        );
+    });
+
 });
 
 function performSubstitutions(value: string) {
