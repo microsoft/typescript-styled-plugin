@@ -8,7 +8,7 @@ import * as ts from 'typescript/lib/tsserverlibrary';
 import { loadConfiguration } from './configuration';
 import { LanguageServiceLogger } from './logger';
 import StyledTemplateLanguageService from './styled-template-language-service';
-import { getSubstitution } from './substituter';
+import { getSubstitutions } from './substituter';
 
 class LanguageServiceFactory {
     public constructor(
@@ -24,12 +24,8 @@ class LanguageServiceFactory {
         return decorateWithTemplateLanguageService(this.typescript, info.languageService, new StyledTemplateLanguageService(this.typescript, config, logger), {
             tags: config.tags,
             enableForStringWithSubstitutions: true,
-            getSubstitution(
-                templateString: string,
-                start: number,
-                end: number
-            ): string {
-                return getSubstitution(templateString, start, end);
+            getSubstitutions(templateString, spans): string {
+                return getSubstitutions(templateString, spans);
             },
         }, { logger });
     }

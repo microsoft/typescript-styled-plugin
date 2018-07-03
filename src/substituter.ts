@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { LanguageServiceLogger } from './logger';
-
 export function getSubstitutions(
     contents: string,
     spans: ReadonlyArray<{ start: number, end: number }>
@@ -18,7 +16,7 @@ export function getSubstitutions(
     return parts.join('');
 }
 
-export function getSubstitution(
+function getSubstitution(
     templateString: string,
     start: number,
     end: number
