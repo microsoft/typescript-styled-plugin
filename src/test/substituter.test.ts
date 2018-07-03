@@ -87,6 +87,21 @@ describe('substituter', () => {
             ].join('\n')
         );
     });
+
+    it('should insert x for placeholder used as part of a rule (#59)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                '${"button"}, ${"a"} {',
+                'color: ${"red"};',
+                '}',
+            ].join('\n')),
+            [
+                'xxxxxxxxxxx, xxxxxx {',
+                'color: xxxxxxxx;',
+                '}',
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {

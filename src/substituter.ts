@@ -73,7 +73,7 @@ function getReplacementCharacter(
     post: string
 ) {
     if (pre.match(/(^|\n)\s*$/g)) {
-        if (!post.match(/^\s*[\{\:]/)) {  // ${'button'} {
+        if (!post.match(/^\s*[{:,]/)) {  // ${'button'} {
             return ' ';
         }
     }
