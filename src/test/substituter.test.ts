@@ -124,6 +124,14 @@ describe('substituter', () => {
         );
     });
 
+    it('should add zeros for color units (#60)', () => {
+        assert.deepEqual(
+            performSubstitutions(
+                'color: #${1};'
+            ),
+            'color: #000 ;'
+        );
+    });
 });
 
 function performSubstitutions(value: string) {

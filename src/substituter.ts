@@ -65,6 +65,15 @@ function getSubstitution(
         return '$a' + result.slice(2);
     }
 
+    // Placeholder used as hex value:
+    //
+    // styled.x`
+    //    color: #${'000'};
+    // `
+    if (context.pre.match(/#\s*$/)) {
+        return '000' + ' '.repeat(Math.max(context.placeholder.length - 3, 0));
+    }
+
     return result;
 }
 
