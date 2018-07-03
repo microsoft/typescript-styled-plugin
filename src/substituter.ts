@@ -9,14 +9,11 @@ export function getSubstitutions(
     let lastIndex = 0;
     for (const span of spans) {
         const pre = contents.slice(lastIndex, span.start);
-        const sub = getSubstitution({
-            pre,
-            placeholder: contents.slice(span.start, span.end),
-            post: contents.slice(span.end),
-        });
+        const post = contents.slice(span.end);
+        const placeholder = contents.slice(span.start, span.end);
 
         parts.push(pre);
-        parts.push(sub);
+        parts.push(getSubstitution({ pre, placeholder, post }));
         lastIndex = span.end;
     }
     parts.push(contents.slice(lastIndex));
@@ -52,9 +49,20 @@ function getSubstitution(
         // `
         if (context.pre.match(/(;|^|\})[\s|\n]*$/)) {
             // Mixin, replace with a dummy variable declaration, so scss server doesn't complain about rogue semicolon
-            return '$a:0' + result.slice(4); // replace(/./gm, c => c === '\n' ? '\n' : ' ');
+            return '$a:0' + result.slice(4);
         }
         return context.placeholder.replace(/./gm, c => c === '\n' ? '\n' : 'x');
+    }
+
+    // Placeholder used as property name:
+    //
+    // styled.x`
+    //    ${'color'}: red;
+    // `
+    //
+    // Replace with fake property name
+    if (context.post.match(/^\s*:/)) {
+        return '$a' + result.slice(2);
     }
 
     return result;
