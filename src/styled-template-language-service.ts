@@ -11,8 +11,7 @@ import * as vscode from 'vscode-languageserver-types';
 import * as config from './config';
 import { TsStyledPluginConfiguration } from './configuration';
 import { LanguageServiceLogger } from './logger';
-
-const wrapperPre = ':root{\n';
+import { VirtualDocumentFactory } from './virtual-document-factory';
 
 const cssErrorCode = 9999;
 
@@ -83,6 +82,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     constructor(
         private readonly typescript: typeof ts,
         private readonly configuration: TsStyledPluginConfiguration,
+        private readonly virtualDocumentFactory: VirtualDocumentFactory,
         private readonly logger: LanguageServiceLogger // tslint:disable-line
     ) { }
 
@@ -133,11 +133,11 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         context: TemplateContext,
         position: ts.LineAndCharacter
     ): ts.QuickInfo | undefined {
-        const doc = this.createVirtualDocument(context);
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const hover = this.scssLanguageService.doHover(doc, this.toVirtualDocPosition(position), stylesheet);
+        const hover = this.scssLanguageService.doHover(doc, this.virtualDocumentFactory.toVirtualDocPosition(position), stylesheet);
         if (hover) {
-            return this.translateHover(hover, this.toVirtualDocPosition(position), context);
+            return this.translateHover(hover, this.virtualDocumentFactory.toVirtualDocPosition(position), context);
         }
         return undefined;
     }
@@ -145,7 +145,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     public getSemanticDiagnostics(
         context: TemplateContext
     ): ts.Diagnostic[] {
-        const doc = this.createVirtualDocument(context);
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         return this.translateDiagnostics(
             this.scssLanguageService.doValidation(doc, stylesheet),
@@ -165,7 +165,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         _errorCodes: number[],
         _format: ts.FormatCodeSettings
     ): ts.CodeAction[] {
-        const doc = this.createVirtualDocument(context);
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         const range = this.toVsRange(context, start, end);
         const diagnostics = this.scssLanguageService.doValidation(doc, stylesheet)
@@ -176,57 +176,14 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             this.scssLanguageService.doCodeActions(doc, range, { diagnostics }, stylesheet));
     }
 
-    private createVirtualDocument(
-        context: TemplateContext
-    ): vscode.TextDocument {
-        const contents = `${wrapperPre}${context.text}\n}`;
-        return {
-            uri: 'untitled://embedded.scss',
-            languageId: 'scss',
-            version: 1,
-            getText: () => contents,
-            positionAt: (offset: number) => {
-                const pos = context.toPosition(this.fromVirtualDocOffset(offset));
-                return this.toVirtualDocPosition(pos);
-            },
-            offsetAt: (p: vscode.Position) => {
-                const offset = context.toOffset(this.fromVirtualDocPosition(p));
-                return this.toVirtualDocOffset(offset);
-            },
-            lineCount: contents.split(/n/g).length + 1,
-        };
-    }
-
-    private toVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter {
-        return {
-            line: position.line + 1,
-            character: position.character,
-        };
-    }
-
-    private fromVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter {
-        return {
-            line: position.line - 1,
-            character: position.character,
-        };
-    }
-
-    private toVirtualDocOffset(offset: number) {
-        return offset + wrapperPre.length;
-    }
-
-    private fromVirtualDocOffset(offset: number) {
-        return offset - wrapperPre.length;
-    }
-
     private toVsRange(
         context: TemplateContext,
         start: number,
         end: number
     ): vscode.Range {
         return {
-            start: this.toVirtualDocPosition(context.toPosition(start)),
-            end: this.toVirtualDocPosition(context.toPosition(end)),
+            start: this.virtualDocumentFactory.toVirtualDocPosition(context.toPosition(start)),
+            end: this.virtualDocumentFactory.toVirtualDocPosition(context.toPosition(end)),
         };
     }
 
@@ -238,8 +195,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         if (cached) {
             return cached;
         }
-        const doc = this.createVirtualDocument(context);
-        const virtualPosition = this.toVirtualDocPosition(position);
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
+        const virtualPosition = this.virtualDocumentFactory.toVirtualDocPosition(position);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
         const emmetResults: vscode.CompletionList = {
             isIncomplete: true,
@@ -287,8 +244,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             return undefined;
         }
 
-        const start = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.start));
-        const length = context.toOffset(this.fromVirtualDocPosition(diagnostic.range.end)) - start;
+        const start = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(diagnostic.range.start));
+        const length = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(diagnostic.range.end)) - start;
         const code = typeof diagnostic.code === 'number' ? diagnostic.code : cssErrorCode;
         return {
             code,
@@ -317,13 +274,13 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
             }
         };
         convertPart(hover.contents);
-        const start = context.toOffset(this.fromVirtualDocPosition(hover.range ? hover.range.start : position));
+        const start = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(hover.range ? hover.range.start : position));
         return {
             kind: this.typescript.ScriptElementKind.unknown,
             kindModifiers: '',
             textSpan: {
                 start,
-                length: hover.range ? context.toOffset(this.fromVirtualDocPosition(hover.range.end)) - start : 1,
+                length: hover.range ? context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(hover.range.end)) - start : 1,
             },
             displayParts: [],
             documentation: contents,
@@ -356,8 +313,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         context: TemplateContext,
         textEdit: vscode.TextEdit
     ): ts.FileTextChanges {
-        const start = context.toOffset(this.fromVirtualDocPosition(textEdit.range.start));
-        const end = context.toOffset(this.fromVirtualDocPosition(textEdit.range.end));
+        const start = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(textEdit.range.start));
+        const end = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition(textEdit.range.end));
         return {
             fileName: context.fileName,
             textChanges: [{
