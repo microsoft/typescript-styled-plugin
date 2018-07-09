@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.9.2 - July 9, 2018
+- Remove TS as peerDep.
+
 # 0.9.1 - July 9, 2018
 - Allow language service to be consumed by other libraries.
 
