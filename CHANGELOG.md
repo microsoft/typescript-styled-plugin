@@ -1,6 +1,6 @@
 # Changelog
 
-# 0.9.0 - July 9, 2018
+# 0.9.1 - July 9, 2018
 - Allow language service to be consumed by other libraries.
 
 # 0.8.1 - July 2, 2018
