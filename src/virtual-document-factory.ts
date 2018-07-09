@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import { TemplateContext } from 'typescript-template-language-service-decorator';
-import * as vscode from 'vscode-languageserver-types';
+import * as vscode from 'vscode-languageserver-types/lib/umd/main';
 
 const wrapperPre = ':root{\n';
 

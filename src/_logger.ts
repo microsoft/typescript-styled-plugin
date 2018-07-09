@@ -1,5 +1,5 @@
 import { Logger } from 'typescript-template-language-service-decorator';
-import { pluginName } from './config';
+import { pluginName } from './_config';
 
 export class LanguageServiceLogger implements Logger {
     constructor(

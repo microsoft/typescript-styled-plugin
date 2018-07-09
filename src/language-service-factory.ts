@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import { decorateWithTemplateLanguageService } from 'typescript-template-language-service-decorator';
-import { loadConfiguration } from './configuration';
-import { LanguageServiceLogger } from './logger';
-import StyledTemplateLanguageService from './styled-template-language-service';
+import { loadConfiguration } from './_configuration';
+import { LanguageServiceLogger } from './_logger';
+import StyledTemplateLanguageService from './language-service';
 import { getSubstitutions } from './substituter';
 import { VirtualDocumentFactory } from './virtual-document-factory';
 import * as ts from 'typescript/lib/tsserverlibrary';
