@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-export interface TsStyledPluginConfiguration {
-    tags: string[];
-    validate: boolean;
-    lint: { [key: string]: any };
-    emmet: { [key: string]: any };
+export interface StyledPluginConfiguration {
+    readonly tags: ReadonlyArray<string>;
+    readonly validate: boolean;
+    readonly lint: { [key: string]: any };
+    readonly emmet: { [key: string]: any };
 }
 
-export const defaultConfiguration: TsStyledPluginConfiguration = {
+const defaultConfiguration: StyledPluginConfiguration = {
     tags: ['styled', 'css', 'extend'],
     validate: true,
     lint: {
@@ -17,7 +17,7 @@ export const defaultConfiguration: TsStyledPluginConfiguration = {
     emmet: {},
 };
 
-export const loadConfiguration = (config: any): TsStyledPluginConfiguration => {
+export const loadConfiguration = (config: any): StyledPluginConfiguration => {
     const lint = Object.assign({}, defaultConfiguration.lint, config.lint || {});
     return {
         tags: config.tags || defaultConfiguration.tags,

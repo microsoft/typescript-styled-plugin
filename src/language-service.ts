@@ -9,7 +9,7 @@ import { getCSSLanguageService, getSCSSLanguageService, LanguageService } from '
 import { getEmmetCompletionParticipants } from 'vscode-emmet-helper';
 import * as vscode from 'vscode-languageserver-types/lib/umd/main';
 import * as config from './_config';
-import { TsStyledPluginConfiguration } from './_configuration';
+import { StyledPluginConfiguration } from './_configuration';
 import { LanguageServiceLogger } from './_logger';
 import { VirtualDocumentFactory } from './virtual-document-factory';
 
@@ -81,7 +81,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
 
     constructor(
         private readonly typescript: typeof ts,
-        private readonly configuration: TsStyledPluginConfiguration,
+        private readonly configuration: StyledPluginConfiguration,
         private readonly virtualDocumentFactory: VirtualDocumentFactory,
         private readonly logger: Logger // tslint:disable-line
     ) { }

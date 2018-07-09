@@ -21,7 +21,7 @@ export class LanguageServiceFactory {
         logger.log('config: ' + JSON.stringify(config));
 
         return decorateWithTemplateLanguageService(this.typescript, info.languageService, new StyledTemplateLanguageService(this.typescript, config, this.virtualDocumentFactory, logger), {
-            tags: config.tags,
+            tags: config.tags as string[],
             enableForStringWithSubstitutions: true,
             getSubstitutions(templateString, spans): string {
                 return getSubstitutions(templateString, spans);
