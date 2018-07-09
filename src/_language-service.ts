@@ -3,15 +3,14 @@
 //
 // Original code forked from https://github.com/Quramy/ts-graphql-plugin
 
-import { TemplateContext, TemplateLanguageService, Logger } from 'typescript-template-language-service-decorator';
+import { Logger, TemplateContext, TemplateLanguageService } from 'typescript-template-language-service-decorator';
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getCSSLanguageService, getSCSSLanguageService, LanguageService } from 'vscode-css-languageservice/lib/umd/cssLanguageService';
+import { getCSSLanguageService, getSCSSLanguageService, LanguageService } from 'vscode-css-languageservice';
 import { getEmmetCompletionParticipants } from 'vscode-emmet-helper';
-import * as vscode from 'vscode-languageserver-types/lib/umd/main';
+import * as vscode from 'vscode-languageserver-types';
 import * as config from './_config';
 import { StyledPluginConfiguration } from './_configuration';
-import { LanguageServiceLogger } from './_logger';
-import { VirtualDocumentFactory } from './_virtual-document-factory';
+import { VirtualDocumentProvider } from './_virtual-document-provider';
 
 const cssErrorCode = 9999;
 
@@ -74,7 +73,7 @@ class CompletionsCache {
     }
 }
 
-export default class StyledTemplateLanguageService implements TemplateLanguageService {
+export class StyledTemplateLanguageService implements TemplateLanguageService {
     private _cssLanguageService?: LanguageService;
     private _scssLanguageService?: LanguageService;
     private _completionsCache = new CompletionsCache();
@@ -82,7 +81,7 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
     constructor(
         private readonly typescript: typeof ts,
         private readonly configuration: StyledPluginConfiguration,
-        private readonly virtualDocumentFactory: VirtualDocumentFactory,
+        private readonly virtualDocumentFactory: VirtualDocumentProvider,
         private readonly logger: Logger // tslint:disable-line
     ) { }
 

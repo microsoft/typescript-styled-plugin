@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import { TemplateContext } from 'typescript-template-language-service-decorator';
-import * as vscode from 'vscode-languageserver-types/lib/umd/main';
+import * as vscode from 'vscode-languageserver-types';
 
-const wrapperPre = ':root{\n';
-
-export interface VirtualDocumentFactory {
+/**
+ * Handles mapping between template contents to virtual documents.
+ */
+export interface VirtualDocumentProvider {
     createVirtualDocument(context: TemplateContext): vscode.TextDocument;
     toVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
     fromVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
@@ -13,11 +14,19 @@ export interface VirtualDocumentFactory {
     fromVirtualDocOffset(offset: number): number;
 }
 
-export class StyledVirtualDocumentFactory {
+/**
+ * Standard virtual document provider for styled content.
+ *
+ * Wraps content in a top level `:root { }` rule to make css language service happy
+ * since styled allows properties to be top level elements.
+ */
+export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
+    private static readonly wrapperPre = ':root{\n';
+
     public createVirtualDocument(
         context: TemplateContext
     ): vscode.TextDocument {
-        const contents = `${wrapperPre}${context.text}\n}`;
+        const contents = `${StyledVirtualDocumentFactory.wrapperPre}${context.text}\n}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',
@@ -50,10 +59,10 @@ export class StyledVirtualDocumentFactory {
     }
 
     public toVirtualDocOffset(offset: number): number {
-        return offset + wrapperPre.length;
+        return offset + StyledVirtualDocumentFactory.wrapperPre.length;
     }
 
     public fromVirtualDocOffset(offset: number): number {
-        return offset - wrapperPre.length;
+        return offset - StyledVirtualDocumentFactory.wrapperPre.length;
     }
 }
