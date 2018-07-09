@@ -162,8 +162,8 @@ export default class StyledTemplateLanguageService implements TemplateLanguageSe
         context: TemplateContext,
         start: number,
         end: number,
-        errorCodes: number[],
-        format: ts.FormatCodeSettings
+        _errorCodes: number[],
+        _format: ts.FormatCodeSettings
     ): ts.CodeAction[] {
         const doc = this.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
