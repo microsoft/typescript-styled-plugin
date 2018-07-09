@@ -38,9 +38,6 @@
     "tslint": "^5.10.0",
     "typescript": "^2.6.2"
   },
-  "peerDependencies": {
-    "typescript": "^2.3.0"
-  },
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",
     "watch:compile": "./node_modules/.bin/tsc --watch -p .",
