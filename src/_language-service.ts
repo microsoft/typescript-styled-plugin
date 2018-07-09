@@ -11,7 +11,7 @@ import * as vscode from 'vscode-languageserver-types/lib/umd/main';
 import * as config from './_config';
 import { StyledPluginConfiguration } from './_configuration';
 import { LanguageServiceLogger } from './_logger';
-import { VirtualDocumentFactory } from './virtual-document-factory';
+import { VirtualDocumentFactory } from './_virtual-document-factory';
 
 const cssErrorCode = 9999;
 
