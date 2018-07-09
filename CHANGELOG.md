@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.9.0 - July 9, 2018
+- Allow language service to be consumed by other libraries.
+
 # 0.8.1 - July 2, 2018
 - Fix some false error reports around creative uses of placeholders.
 
