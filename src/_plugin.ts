@@ -6,7 +6,7 @@ import { loadConfiguration, StyledPluginConfiguration } from './_configuration';
 import { StyledTemplateLanguageService } from './_language-service';
 import { LanguageServiceLogger } from './_logger';
 import { getSubstitutions } from './_substituter';
-import { VirtualDocumentProvider, StyledVirtualDocumentFactory } from './_virtual-document-provider';
+import { StyledVirtualDocumentFactory } from './_virtual-document-provider';
 
 export class StyledPlugin {
     public constructor(
