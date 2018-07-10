@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.10.0 - July 10, 2018
+- Add folding support.
+
 # 0.9.2 - July 9, 2018
 - Remove TS as peerDep.
 
