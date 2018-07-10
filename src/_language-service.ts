@@ -5,7 +5,7 @@
 
 import { Logger, TemplateContext, TemplateLanguageService } from 'typescript-template-language-service-decorator';
 import * as ts from 'typescript/lib/tsserverlibrary';
-import { getCSSLanguageService, getSCSSLanguageService, LanguageService } from 'vscode-css-languageservice';
+import { getCSSLanguageService, getSCSSLanguageService, LanguageService, FoldingRange } from 'vscode-css-languageservice';
 import { getEmmetCompletionParticipants } from 'vscode-emmet-helper';
 import * as vscode from 'vscode-languageserver-types';
 import * as config from './_config';
@@ -175,6 +175,23 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
             this.scssLanguageService.doCodeActions(doc, range, { diagnostics }, stylesheet));
     }
 
+    public getOutliningSpans(
+        context: TemplateContext
+    ): ts.OutliningSpan[] {
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
+        const ranges = this.scssLanguageService.getFoldingRanges(doc);
+        return ranges
+            .filter(range => {
+                // Filter out ranges outside on last line
+                const end = context.toOffset({
+                    line: range.endLine,
+                    character: range.endCharacter || 0,
+                });
+                return end < context.text.length;
+            })
+            .map(range => this.translateOutliningSpan(context, range));
+    }
+
     private toVsRange(
         context: TemplateContext,
         start: number,
@@ -323,6 +340,26 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
                     length: end - start,
                 },
             }],
+        };
+    }
+
+    private translateOutliningSpan(
+        context: TemplateContext,
+        range: FoldingRange
+    ): ts.OutliningSpan {
+        const startOffset = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition({ line: range.startLine, character: range.startCharacter || 0 }));
+        const endOffset = context.toOffset(this.virtualDocumentFactory.fromVirtualDocPosition({ line: range.endLine, character: range.endCharacter || 0 }));
+        const span = {
+            start: startOffset,
+            length: endOffset - startOffset,
+        };
+
+        return {
+            autoCollapse: false,
+            kind: this.typescript.OutliningSpanKind.Code,
+            bannerText: '',
+            textSpan: span,
+            hintSpan: span,
         };
     }
 }
