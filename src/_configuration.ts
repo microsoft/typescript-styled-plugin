@@ -9,7 +9,7 @@ export interface StyledPluginConfiguration {
 }
 
 const defaultConfiguration: StyledPluginConfiguration = {
-    tags: ['styled', 'css', 'extend'],
+    tags: ['styled', 'css', 'extend', 'injectGlobal', 'createGlobalStyle'],
     validate: true,
     lint: {
         emptyRules: 'ignore',
