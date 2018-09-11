@@ -1,5 +1,9 @@
 # Changelog
 
+# 0.11.0 - September 11, 2018
+- Fixed some false positive errors when using a placeholder in a contexual selector. Thanks @lukyth!
+- Apply in `injectGlobal` or `createGlobalStyle` by default. Thanks @scf4!
+
 # 0.10.0 - July 10, 2018
 - Add folding support.
 
