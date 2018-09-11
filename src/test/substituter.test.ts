@@ -132,6 +132,32 @@ describe('substituter', () => {
             'color: #000 ;'
         );
     });
+
+    it('should replace adjacent variables with x (#62)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                `margin: \${'1px'}\${'1px'};`,
+                `padding: \${'1px'} \${'1px'};`,
+            ].join('\n')),
+            [
+                `margin: xxxxxxxxxxxxxxxx;`,
+                `padding: xxxxxxxx xxxxxxxx;`,
+            ].join('\n')
+        );
+    });
+
+    it('should replace placeholder that spans multiple lines with x (#44)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                'background:',
+                `  $\{'transparent'};`,
+            ].join('\n')),
+            [
+                'background:',
+                '  xxxxxxxxxxxxxxxx;',
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {
