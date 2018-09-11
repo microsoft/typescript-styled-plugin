@@ -70,8 +70,16 @@ function getSubstitution(
     //    ${'color'}: red;
     // `
     //
+    // But note that this shouldn't be included:
+    //
+    // styled.x`
+    //     ${'button'}:hover & {
+    //         color: red
+    //     }
+    // `
+    //
     // Replace with fake property name
-    if (context.post.match(/^\s*[:]/)) {
+    if (context.post.match(/^\s*[:]/) && !context.post.match(/^\s*[:].+?[\{&]/)) {
         return '$a' + result.slice(2);
     }
 

@@ -2,14 +2,14 @@
 const assert = require('chai').assert;
 const path = require('path');
 const createServer = require('../server-fixture');
-const { openMockFile, getFirstResponseOfType } = require('./_helpers');
+const {openMockFile, getFirstResponseOfType} = require('./_helpers');
 
 const mockFileName = path.join(__dirname, '..', 'project-fixture', 'main.ts');
 
 const getSemanticDiagnosticsForFile = (fileContents) => {
     const server = createServer();
     openMockFile(server, mockFileName, fileContents);
-    server.sendCommand('semanticDiagnosticsSync', { file: mockFileName });
+    server.sendCommand('semanticDiagnosticsSync', {file: mockFileName});
 
     return server.close().then(_ => {
         return getFirstResponseOfType('semanticDiagnosticsSync', server);
@@ -305,5 +305,55 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
-});
 
+    it('should not return an error for contextual selector (#71)', () => {
+        return getSemanticDiagnosticsForFile(
+            `let css: any = {}; const q = css.a\`
+                html.test & {
+                    display: none;
+                }
+            \``
+        ).then(errorResponse => {
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
+
+    it('should not return an error for placeholder used in contextual selector (#71)', async () => {
+        {
+            const errorResponse = await getSemanticDiagnosticsForFile(
+                `let css: any = {}; let FlipContainer = 'button'; const q = css.a\`
+                position: relative;
+
+                $\{FlipContainer}:hover & {
+                    transform: rotateY(180deg);
+                }
+            \``);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        }
+        {
+            // #67 part 1
+            const errorResponse = await getSemanticDiagnosticsForFile(
+                `let css: any = {}; let OtherStyledElm = 'button'; const q = css.a\`
+                    \${OtherStyledElm}:not([value=""]) + & {
+                        transform: rotateY(180deg);
+                    }
+                \``);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        }
+        {
+            // #67 part 2
+            const errorResponse = await getSemanticDiagnosticsForFile(
+                `let css: any = {}; let OtherStyledElm = 'button'; const q = css.a\`
+                    \${OtherStyledElm} + &,
+                    \${OtherStyledElm}:not([value=""]) + & {
+                        transform: rotateY(180deg);
+                    }
+                \``);
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        }
+    });
+});

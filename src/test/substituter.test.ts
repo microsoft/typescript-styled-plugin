@@ -158,6 +158,25 @@ describe('substituter', () => {
             ].join('\n')
         );
     });
+
+    it('should replace placeholder used in contextual selector (#71)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                'position: relative;',
+                '',
+                '${FlipContainer}:hover & {',
+                '   transform: rotateY(180deg);',
+                '}',
+            ].join('\n')),
+            [
+                'position: relative;',
+                '',
+                'xxxxxxxxxxxxxxxx:hover & {',
+                '   transform: rotateY(180deg);',
+                '}',
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {
