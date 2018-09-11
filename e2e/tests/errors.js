@@ -356,4 +356,13 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         }
     });
+
+    it('should not return an error for custom function (#21)', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `function css<T>(): any {}; const q = css<{}>()(window.blur)\`
+                display: none;
+            \``);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 0);
+    });
 });
