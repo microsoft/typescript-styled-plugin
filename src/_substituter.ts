@@ -7,12 +7,20 @@ export function getSubstitutions(
 ): string {
     const parts: string[] = [];
     let lastIndex = 0;
+    const lineStarts = contents
+        .split('\n')
+        .map(line => line.length)
+        .reduce((previousValue, currentValue, currentIndex) => [...previousValue, currentValue + previousValue[currentIndex] + 1], [0]);
+    let lineStartIndex = 0;
     for (const span of spans) {
-        const pre = contents.slice(lastIndex, span.start);
+        while (lineStarts[lineStartIndex] <= span.start) {
+            lineStartIndex++;
+        }
+        const pre = contents.slice(lineStarts[lineStartIndex - 1], span.start);
         const post = contents.slice(span.end);
         const placeholder = contents.slice(span.start, span.end);
 
-        parts.push(pre);
+        parts.push(contents.slice(lastIndex, span.start));
         parts.push(getSubstitution({ pre, placeholder, post }));
         lastIndex = span.end;
     }

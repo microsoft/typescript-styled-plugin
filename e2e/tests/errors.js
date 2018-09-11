@@ -294,5 +294,16 @@ describe('Errors', () => {
             assert.strictEqual(errorResponse.body.length, 0);
         });
     });
+
+    it('should not return an error on adjacent variables (#62)', () => {
+        return getSemanticDiagnosticsForFile(
+            `let css: any = {}; const margin1 = "3px"; const margin2 = "3px"; const q = css.a\`
+                margin: $\{margin1} $\{margin2};
+            \``
+        ).then(errorResponse => {
+            assert.isTrue(errorResponse.success);
+            assert.strictEqual(errorResponse.body.length, 0);
+        });
+    });
 });
 

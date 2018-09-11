@@ -132,6 +132,19 @@ describe('substituter', () => {
             'color: #000 ;'
         );
     });
+
+    it('should replace adjacent variables with x (#62)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                `margin: \${'1px'}\${'1px'};`,
+                `padding: \${'1px'} \${'1px'};`,
+            ].join('\n')),
+            [
+                `margin: xxxxxxxxxxxxxxxx;`,
+                `padding: xxxxxxxx xxxxxxxx;`,
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {
