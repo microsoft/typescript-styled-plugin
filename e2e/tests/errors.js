@@ -365,4 +365,15 @@ describe('Errors', () => {
         assert.isTrue(errorResponse.success);
         assert.strictEqual(errorResponse.body.length, 0);
     });
+
+    it('should not return an error for empty sub-rulesets (#50)', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `let css: any = {}; const q = css.a\`
+                :nth-of-type(1) {
+                    \${true ? "display: initial" : "display: hidden"}
+                }
+            \``);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 0);
+    });
 });
