@@ -145,6 +145,19 @@ describe('substituter', () => {
             ].join('\n')
         );
     });
+
+    it('should replace placeholder that spans multiple lines with x (#44)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                'background:',
+                `  $\{'transparent'};`,
+            ].join('\n')),
+            [
+                'background:',
+                '  xxxxxxxxxxxxxxxx;',
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {
