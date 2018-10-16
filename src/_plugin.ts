@@ -22,6 +22,7 @@ export class StyledPlugin {
         return decorateWithTemplateLanguageService(
             this.typescript,
             info.languageService,
+            info.project,
             new StyledTemplateLanguageService(this.typescript, config, new StyledVirtualDocumentFactory(), logger),
             getTemplateSettings(config),
             { logger });

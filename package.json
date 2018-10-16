@@ -20,7 +20,7 @@
     "url": "https://github.com/Microsoft/typescript-styled-plugin/issues"
   },
   "dependencies": {
-    "typescript-template-language-service-decorator": "^1.7.1",
+    "typescript-template-language-service-decorator": "^2.0.0",
     "vscode-css-languageservice": "^3.0.10",
     "vscode-languageserver-types": "^3.13.0",
     "vscode-emmet-helper": "1.2.11"
