@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.12.0 - October 15, 2018
+- Pick up new decorator library version to fix a possible state corruption error.
+
 # 0.11.0 - September 11, 2018
 - Fixed some false positive errors when using a placeholder in a contexual selector. Thanks @lukyth!
 - Apply in `injectGlobal` or `createGlobalStyle` by default. Thanks @scf4!
