@@ -388,8 +388,8 @@ function translateCompletionItemsToCompletionEntryDetails(
 ): ts.CompletionEntryDetails {
     return {
         name: item.label,
-        kindModifiers: 'declare',
         kind: item.kind ? translateCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        kindModifiers: getKindModifiers(item),
         displayParts: toDisplayParts(item.detail),
         documentation: toDisplayParts(item.documentation),
         tags: [],
@@ -402,8 +402,8 @@ function translateCompetionEntry(
 ): ts.CompletionEntry {
     return {
         name: item.label,
-        kindModifiers: 'declare',
         kind: item.kind ? translateCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        kindModifiers: getKindModifiers(item),
         sortText: item.sortText || item.label,
     };
 }
@@ -448,6 +448,13 @@ function translateCompletionItemKind(
         default:
             return typescript.ScriptElementKind.unknown;
     }
+}
+
+function getKindModifiers(item: vscode.CompletionItem): string {
+    if (item.kind === vscode.CompletionItemKind.Color) {
+        return 'color';
+    }
+    return '';
 }
 
 function translateSeverity(

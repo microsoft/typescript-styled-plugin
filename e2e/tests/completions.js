@@ -245,4 +245,15 @@ describe('Completions', () => {
         assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
         assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
     });
+
+    it('should mark color completions with "color" kindModifier', async () => {
+        const server = createServerWithMockFile('const q = css`color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 21, line: 1 });
+
+        await server.close();
+        const completionsResponse = getFirstResponseOfType('completions', server);
+        assert.isTrue(completionsResponse.success);
+        const aliceBlue = completionsResponse.body.find(item => item.name === 'aliceblue');
+        assert.isTrue(aliceBlue.kindModifiers === 'color');
+    });
 });
