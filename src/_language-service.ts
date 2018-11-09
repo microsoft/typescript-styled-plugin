@@ -104,7 +104,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
     public getCompletionsAtPosition(
         context: TemplateContext,
         position: ts.LineAndCharacter
-    ): ts.CompletionInfo {
+    ): ts.WithMetadata<ts.CompletionInfo> {
         const items = this.getCompletionItems(context, position);
         return translateCompletionItemsToCompletionInfo(this.typescript, items);
     }
@@ -373,8 +373,11 @@ function filterScssCompletionItems(
 function translateCompletionItemsToCompletionInfo(
     typescript: typeof ts,
     items: vscode.CompletionList
-): ts.CompletionInfo {
+): ts.WithMetadata<ts.CompletionInfo> {
     return {
+        metadata: {
+            isIncomplete: items.isIncomplete
+        },
         isGlobalCompletion: false,
         isMemberCompletion: false,
         isNewIdentifierLocation: false,

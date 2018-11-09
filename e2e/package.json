@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "typescript": "2.9.2",
+    "typescript": "^3.2.0-dev.20181107",
     "typescript-styled-plugin": "file:./.."
   }
 }

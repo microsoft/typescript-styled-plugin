@@ -142,4 +142,14 @@ describe('Emmet Completions', () => {
         const completionsResponse = getFirstResponseOfType('completions', server);
         assert.isTrue(completionsResponse.body.some(item => item.name === '#121212'));
     });
+
+    it('should mark emmet completions as isIncomplete', async () => {
+        const { server, mockFileName } = createMockFileForServer('const q = css`m10-20`');
+        server.sendCommand('completions', { file: mockFileName, offset: 21, line: 1 });
+
+        await server.close();
+        const completionsResponse = getFirstResponseOfType('completions', server);
+        assert.isTrue(completionsResponse.body.some(item => item.name === 'margin: 10px 20px;'));
+        assert.isTrue(completionsResponse.metadata.isIncomplete);
+    });
 });
