@@ -376,4 +376,19 @@ describe('Errors', () => {
         assert.isTrue(errorResponse.success);
         assert.strictEqual(errorResponse.body.length, 0);
     });
+
+    it('should not return an error (#74)', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `let css: any = {};
+            const ListNoteItem = 'bla';
+            const ListNoteTitle = css.span\`
+                font-weight: bold;
+                color: \${props => props.theme.primaryColor};
+                \${ListNoteItem}:hover & {
+                    text-decoration: underline;
+                }
+            \`;`);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 0);
+    });
 });

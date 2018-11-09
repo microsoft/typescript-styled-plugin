@@ -171,7 +171,7 @@ describe('substituter', () => {
             [
                 'position: relative;',
                 '',
-                'xxxxxxxxxxxxxxxx:hover & {',
+                '&               :hover & {',
                 '   transform: rotateY(180deg);',
                 '}',
             ].join('\n')

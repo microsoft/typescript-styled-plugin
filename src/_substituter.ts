@@ -83,6 +83,18 @@ function getSubstitution(
         return '$a' + result.slice(2);
     }
 
+    // Placeholder for component
+    //
+    // styled.x`
+    //     ${'button'}:hover & {
+    //         color: red
+    //     }
+    // `
+    // Replace with fake selector
+    if (context.post.match(/^\s*[:].+?[\{&]/)) {
+        return '&' + ' '.repeat(result.length - 1);
+    }
+
     // Placeholder used as hex value:
     //
     // styled.x`
