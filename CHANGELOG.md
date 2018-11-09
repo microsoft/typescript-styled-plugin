@@ -1,5 +1,9 @@
 # Changelog
 
+# 0.13.0 - November 8, 2018
+- Mark color completions with the `'color'` `kindModifier`. This allows editors to render the color previews inline.
+- Fix more false positive errors.
+
 # 0.12.0 - October 15, 2018
 - Pick up new decorator library version to fix a possible state corruption error.
 
