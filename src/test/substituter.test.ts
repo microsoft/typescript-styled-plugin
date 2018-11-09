@@ -177,6 +177,23 @@ describe('substituter', () => {
             ].join('\n')
         );
     });
+
+    it('should replace placeholder used in child selector (#75)', () => {
+        assert.deepEqual(
+            performSubstitutions([
+                'position: relative;',
+                '> ${FlipContainer}:hover {',
+                '   color: red;',
+                '}',
+            ].join('\n')),
+            [
+                'position: relative;',
+                '> &               :hover {',
+                '   color: red;',
+                '}',
+            ].join('\n')
+        );
+    });
 });
 
 function performSubstitutions(value: string) {

@@ -166,7 +166,7 @@ describe('Errors', () => {
         });
     });
 
-    it('should not return an error for a placeholder that spans multiple lines (#44)', () => {
+    it('should not return an error for a placeholder that spans multiple lines aaa (#44)', () => {
         return getSemanticDiagnosticsForFile(
             `let css: any = {}; const q = css.a\`
   color:
@@ -176,14 +176,12 @@ describe('Errors', () => {
     color: inherit;
     text-decoration: none;
   }
-}
         \``
         ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
-            assert.strictEqual(errorResponse.body.length, 0);
+            assert.strictEqual(errorResponse.body.length, 0); 
         });
     });
-
 
     it('should not return an error for complicated style (#44)', () => {
         return getSemanticDiagnosticsForFile(
@@ -360,5 +358,33 @@ describe('Errors', () => {
             \`;`);
         assert.isTrue(errorResponse.success);
         assert.strictEqual(errorResponse.body.length, 0);
+    });
+
+    it('should not return an error for child selector (#75)', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `let css: any = {};
+            const ListNoteItem = 'bla';
+            const ListNoteTitle = css.span\`
+                width: 100%;
+                > \${ListNoteItem}:hover {
+                    color: red;
+                }
+            \`;`);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 0);
+    });
+
+    it('should include error for unknown property in selector', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `let css: any = {};
+            const ListNoteItem = 'bla';
+            const ListNoteTitle = css.span\`
+                width: 100%;
+                &:hover {
+                    noSuch: red;
+                }
+            \`;`);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 1);
     });
 });
