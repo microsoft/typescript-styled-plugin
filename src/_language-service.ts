@@ -389,7 +389,7 @@ function translateCompletionItemsToCompletionEntryDetails(
     return {
         name: item.label,
         kindModifiers: 'declare',
-        kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        kind: item.kind ? translateCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
         displayParts: toDisplayParts(item.detail),
         documentation: toDisplayParts(item.documentation),
         tags: [],
@@ -403,12 +403,12 @@ function translateCompetionEntry(
     return {
         name: item.label,
         kindModifiers: 'declare',
-        kind: item.kind ? translateionCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
+        kind: item.kind ? translateCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
         sortText: item.sortText || item.label,
     };
 }
 
-function translateionCompletionItemKind(
+function translateCompletionItemKind(
     typescript: typeof ts,
     kind: vscode.CompletionItemKind
 ): ts.ScriptElementKind {
