@@ -109,7 +109,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         return translateCompletionItemsToCompletionInfo(this.typescript, items);
     }
 
-    public getCompletionEntryDetails?(
+    public getCompletionEntryDetails(
         context: TemplateContext,
         position: ts.LineAndCharacter,
         name: string
