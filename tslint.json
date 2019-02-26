@@ -1,33 +1,65 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:recommended"],
-  "jsRules": {},
+  "extends": [
+    "tslint:recommended"
+  ],
   "rules": {
-    "indent": [true, "spaces"],
-    "interface-name": [true, "never-prefix"],
-    "variable-name": [true, "check-format", "allow-leading-underscore"],
-    "curly": [true, "ignore-same-line"],
-    "member-access": [true],
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore"
+    ],
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "member-access": [
+      true
+    ],
     "max-classes-per-file": false,
     "whitespace": false,
     "no-empty": false,
     "object-literal-sort-keys": false,
     "no-unused-expression": true,
-    "no-unused-variable": [true],
-    "arrow-parens": [true, "ban-single-arg-parens"],
-    "quotemark": [true, "single"],
+    "no-unused-variable": [
+      true
+    ],
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "quotemark": [
+      true,
+      "single"
+    ],
     "eofline": false,
-    "semicolon": [true, "always"],
+    "semicolon": [
+      true,
+      "always"
+    ],
     "class-name": true,
     "prefer-const": true,
     "import-spacing": true,
     "ordered-imports": false,
-    "trailing-comma": [true, { "multiline": {
-      "objects": "always",
-      "arrays": "always",
-      "functions": "never",
-      "typeLiterals": "ignore"
-    }}],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": {
+          "objects": "always",
+          "arrays": "always",
+          "functions": "never",
+          "typeLiterals": "ignore"
+        }
+      }
+    ],
     "max-line-length": false
   },
   "rulesDirectory": []
