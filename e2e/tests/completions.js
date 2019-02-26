@@ -70,8 +70,8 @@ describe('Completions', () => {
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
-            assert.isTrue(completionsResponse.success);
-            assert.strictEqual(completionsResponse.body.length, 0);
+            assert.isFalse(completionsResponse.success);
+            assert.strictEqual(completionsResponse.message, 'No content available.');
         });
     });
 
