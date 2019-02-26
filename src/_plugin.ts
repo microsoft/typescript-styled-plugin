@@ -19,6 +19,11 @@ export class StyledPlugin {
 
         logger.log('config: ' + JSON.stringify(config));
 
+        if (!isValidTypeScriptVersion(this.typescript)) {
+            logger.log('Invalid typescript version detected. TypeScript 3.x required.');
+            return info.languageService;
+        }
+
         return decorateWithTemplateLanguageService(
             this.typescript,
             info.languageService,
@@ -31,10 +36,15 @@ export class StyledPlugin {
 
 export function getTemplateSettings(config: StyledPluginConfiguration): TemplateSettings {
     return {
-        tags: config.tags as string[],
+        tags: config.tags,
         enableForStringWithSubstitutions: true,
         getSubstitutions(templateString, spans): string {
             return getSubstitutions(templateString, spans);
         },
     };
+}
+
+function isValidTypeScriptVersion(typescript: typeof ts): boolean {
+    const [major] = typescript.version.split('.');
+    return +major >= 3;
 }
