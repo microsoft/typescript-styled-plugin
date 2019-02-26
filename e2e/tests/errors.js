@@ -388,12 +388,13 @@ describe('Errors', () => {
         assert.strictEqual(errorResponse.body.length, 1);
     });
 
-    it('should not error for scrollbar properties, #95', async () => {
+    it('should not error for newer properties(#95, #53)', async () => {
         const errorResponse = await getSemanticDiagnosticsForFile(
             `let css: any = {};
             const ListNoteTitle = css.span\`
                 scrollbar-width: 10px;
                 scrollbar-color: red;
+                scroll-snap-align: initial;
             \`;`);
         assert.isTrue(errorResponse.success);
         assert.strictEqual(errorResponse.body.length, 0);
