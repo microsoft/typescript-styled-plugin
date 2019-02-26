@@ -1,5 +1,10 @@
 # Changelog
 
+# 0.14.0 - February 26, 2019
+- Pick up new language service version.
+- Support for dynamically changing configuration.
+- Only enable plugin for TS 3.0+ in order to support automatically enabling plugin for workspace TS versions.
+
 # 0.13.0 - November 8, 2018
 - Mark color completions with the `'color'` `kindModifier`. This allows editors to render the color previews inline.
 - Fix more false positive errors.
