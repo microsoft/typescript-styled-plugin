@@ -36,7 +36,7 @@
     "glob": "^7.1.2",
     "mocha": "^5.2.0",
     "tslint": "^5.10.0",
-    "typescript": "^3.2.0-dev.20181107"
+    "typescript": "^3.3.3333"
   },
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",
