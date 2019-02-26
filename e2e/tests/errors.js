@@ -179,7 +179,7 @@ describe('Errors', () => {
         \``
         ).then(errorResponse => {
             assert.isTrue(errorResponse.success);
-            assert.strictEqual(errorResponse.body.length, 0); 
+            assert.strictEqual(errorResponse.body.length, 0);
         });
     });
 
@@ -386,5 +386,16 @@ describe('Errors', () => {
             \`;`);
         assert.isTrue(errorResponse.success);
         assert.strictEqual(errorResponse.body.length, 1);
+    });
+
+    it('should not error for scrollbar properties, #95', async () => {
+        const errorResponse = await getSemanticDiagnosticsForFile(
+            `let css: any = {};
+            const ListNoteTitle = css.span\`
+                scrollbar-width: 10px;
+                scrollbar-color: red;
+            \`;`);
+        assert.isTrue(errorResponse.success);
+        assert.strictEqual(errorResponse.body.length, 0);
     });
 });
