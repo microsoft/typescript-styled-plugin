@@ -8,21 +8,38 @@ export interface StyledPluginConfiguration {
     readonly emmet: { [key: string]: any };
 }
 
-const defaultConfiguration: StyledPluginConfiguration = {
-    tags: ['styled', 'css', 'extend', 'injectGlobal', 'createGlobalStyle'],
-    validate: true,
-    lint: {
-        emptyRules: 'ignore',
-    },
-    emmet: {},
-};
+export class ConfigurationManager {
 
-export const loadConfiguration = (config: any): StyledPluginConfiguration => {
-    const lint = Object.assign({}, defaultConfiguration.lint, config.lint || {});
-    return {
-        tags: config.tags || defaultConfiguration.tags,
-        validate: typeof config.validate !== 'undefined' ? config.validate : defaultConfiguration.validate,
-        lint,
-        emmet: config.emmet || defaultConfiguration.emmet,
+    private static readonly defaultConfiguration: StyledPluginConfiguration = {
+        tags: ['styled', 'css', 'extend', 'injectGlobal', 'createGlobalStyle'],
+        validate: true,
+        lint: {
+            emptyRules: 'ignore',
+        },
+        emmet: {},
     };
-};
+
+    private readonly _configUpdatedListeners = new Set<() => void>();
+
+    public get config(): StyledPluginConfiguration { return this._configuration; }
+    private _configuration: StyledPluginConfiguration = ConfigurationManager.defaultConfiguration;
+
+    public updateFromPluginConfig(config: StyledPluginConfiguration) {
+        const lint = Object.assign({}, ConfigurationManager.defaultConfiguration.lint, config.lint || {});
+
+        this._configuration = {
+            tags: config.tags || ConfigurationManager.defaultConfiguration.tags,
+            validate: typeof config.validate !== 'undefined' ? config.validate : ConfigurationManager.defaultConfiguration.validate,
+            lint,
+            emmet: config.emmet || ConfigurationManager.defaultConfiguration.emmet,
+        };
+
+        for (const listener of this._configUpdatedListeners) {
+            listener();
+        }
+    }
+
+    public onUpdatedConfig(listener: () => void) {
+        this._configUpdatedListeners.add(listener);
+    }
+}

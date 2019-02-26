@@ -9,7 +9,7 @@ import { getCSSLanguageService, getSCSSLanguageService, LanguageService, Folding
 import { getEmmetCompletionParticipants } from 'vscode-emmet-helper';
 import * as vscode from 'vscode-languageserver-types';
 import * as config from './_config';
-import { StyledPluginConfiguration } from './_configuration';
+import { ConfigurationManager } from './_configuration';
 import { VirtualDocumentProvider } from './_virtual-document-provider';
 
 const cssErrorCode = 9999;
@@ -80,15 +80,24 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
 
     constructor(
         private readonly typescript: typeof ts,
-        private readonly configuration: StyledPluginConfiguration,
+        private readonly configurationManager: ConfigurationManager,
         private readonly virtualDocumentFactory: VirtualDocumentProvider,
         private readonly logger: Logger // tslint:disable-line
-    ) { }
+    ) {
+        configurationManager.onUpdatedConfig(() => {
+            if (this._cssLanguageService) {
+                this._cssLanguageService.configure(this.configurationManager.config);
+            }
+            if (this._scssLanguageService) {
+                this._scssLanguageService.configure(this.configurationManager.config);
+            }
+        });
+    }
 
     private get cssLanguageService(): LanguageService {
         if (!this._cssLanguageService) {
             this._cssLanguageService = getCSSLanguageService();
-            this._cssLanguageService.configure(this.configuration);
+            this._cssLanguageService.configure(this.configurationManager.config);
         }
         return this._cssLanguageService;
     }
@@ -96,7 +105,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
     private get scssLanguageService(): LanguageService {
         if (!this._scssLanguageService) {
             this._scssLanguageService = getSCSSLanguageService();
-            this._scssLanguageService.configure(this.configuration);
+            this._scssLanguageService.configure(this.configurationManager.config);
         }
         return this._scssLanguageService;
     }
@@ -218,7 +227,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
             isIncomplete: true,
             items: [],
         };
-        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', this.configuration.emmet, emmetResults)]);
+        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', this.configurationManager.config.emmet, emmetResults)]);
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
@@ -376,7 +385,7 @@ function translateCompletionItemsToCompletionInfo(
 ): ts.WithMetadata<ts.CompletionInfo> {
     return {
         metadata: {
-            isIncomplete: items.isIncomplete
+            isIncomplete: items.isIncomplete,
         },
         isGlobalCompletion: false,
         isMemberCompletion: false,
