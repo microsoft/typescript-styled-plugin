@@ -216,6 +216,20 @@ You can also configure how errors are reported using linter settings.
 
 The following lint options are supported:
 
+#### validProperties
+```
+["property1", "property2", ....]
+```
+
+List of properties that are treated as valid.
+
+#### unknownProperties
+```
+"ignore" | "warning" | "error"
+```
+
+Should unknown properties show an error or warning? Default is `"warning"`.
+
 #### compatibleVendorPrefixes
 ```
 "ignore" | "warning" | "error"
@@ -292,13 +306,6 @@ Hex colors must consist of three or six hex numbers. Default is `"error"`.
 ```
 
 Invalid number of parameters. Default is `"error"`.
-
-#### unknownProperties
-```
-"ignore" | "warning" | "error"
-```
-
-Unknown property. Default is `"warning"`.
 
 #### ieHack
 ```
