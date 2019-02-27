@@ -35,8 +35,8 @@
     "chai": "^4.1.2",
     "glob": "^7.1.2",
     "mocha": "^5.2.0",
-    "tslint": "^5.10.0",
-    "typescript": "^3.3.3333"
+    "tslint": "^5.13.0",
+    "typescript": "^3.3.3"
   },
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",

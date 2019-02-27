@@ -29,9 +29,6 @@
     "no-empty": false,
     "object-literal-sort-keys": false,
     "no-unused-expression": true,
-    "no-unused-variable": [
-      true
-    ],
     "arrow-parens": [
       true,
       "ban-single-arg-parens"
