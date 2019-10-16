@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.15.0 - October 16, 2019
+- Pick up new language service version. Thanks @apust!
+
 # 0.14.0 - February 26, 2019
 - Pick up new language service version.
 - Support for dynamically changing configuration.
