@@ -1,0 +1,62 @@
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+name: Continuous Integration
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14.x
+            - run: npm install
+            - name: Linting
+              run: npm run lint
+    compile:
+        name: Compile
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14.x
+            - run: npm install
+            - name: Compiling
+              run: npm run compile
+    unit:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14.x
+            - run: npm install
+            - run: npm run unit
+    e2e:
+        name: E2E Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14.x
+            - run: npm install
+            - run: npm install
+              working-directory: ./e2e
+            - run: npm run e2e
