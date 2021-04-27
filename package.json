@@ -32,17 +32,21 @@
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.4",
     "@types/node": "^7.0.22",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "chai": "^4.1.2",
+    "eslint": "^7.25.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.2.1",
     "glob": "^7.1.2",
     "mocha": "^8.3.0",
-    "tslint": "^6.1.0",
     "typescript": "^4.1.0"
   },
   "scripts": {
     "compile": "./node_modules/.bin/tsc -p .",
     "watch:compile": "./node_modules/.bin/tsc --watch -p .",
     "e2e": "./node_modules/.bin/mocha e2e/tests --slow 2000 --timeout 10000",
-    "lint": "./node_modules/.bin/tslint -c tslint.json -p tsconfig.json",
+    "lint": "./node_modules/.bin/eslint .",
     "unit": "./node_modules/.bin/mocha lib/test"
   }
 }
