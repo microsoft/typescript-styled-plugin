@@ -45,6 +45,8 @@ jobs:
               with:
                   node-version: 14.x
             - run: npm install
+            - name: Compiling
+              run: npm run compile
             - run: npm run unit
     e2e:
         name: E2E Tests
@@ -59,4 +61,6 @@ jobs:
             - run: npm install
             - run: npm install
               working-directory: ./e2e
+            - name: Compiling
+              run: npm run compile
             - run: npm run e2e
