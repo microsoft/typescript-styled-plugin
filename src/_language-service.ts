@@ -170,8 +170,8 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         context: TemplateContext,
         start: number,
         end: number,
-        _errorCodes: number[],
-        _format: ts.FormatCodeSettings
+        // _errorCodes: number[],
+        // _format: ts.FormatCodeSettings
     ): ts.CodeAction[] {
         const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
