@@ -47,6 +47,6 @@
     "watch:compile": "tsc --watch -p .",
     "e2e": "mocha e2e/tests --slow 2000 --timeout 10000",
     "lint": "eslint .",
-    "unit": "mocha lib/test"
+    "unit": "mocha ./lib/test"
   }
 }
