@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.16.0 - April 28, 2021
+- Pick up new language service version. Thanks @hantatsang and @jasonwilliams!
+
 # 0.15.0 - October 16, 2019
 - Pick up new language service version. Thanks @apust!
 
