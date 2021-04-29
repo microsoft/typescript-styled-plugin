@@ -7,7 +7,8 @@
             "name": "Debug Styled Plugin",
             "skipFiles": ["<node_internals>/**"],
             "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-            "port": 9229
+            "port": 9229,
+            "preLaunchTask": "npm: watch:compile"
         }
     ]
 }
