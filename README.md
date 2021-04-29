@@ -4,7 +4,7 @@ TypeScript server plugin that adds intellisense to [styled component](https://st
 
 ![](documentation/preview.gif)
 
-![Build Status](https://github.com/github/docs/actions/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/microsoft/typescript-styled-plugin/actions/workflows/ci.yml/badge.svg)
 
 **Features**
 
