@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.17.0 - May 05, 2021
+- Apply in `keyframes` by default.
+
 # 0.16.0 - April 28, 2021
 - Pick up new language service version. Thanks @hantatsang and @jasonwilliams!
 
