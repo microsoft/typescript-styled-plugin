@@ -7,8 +7,16 @@
             "type": "npm",
             "script": "watch:compile",
             "problemMatcher": [
-                "$tsc-watch"
-            ]
+                {
+                    "base": "$tsc-watch",
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "Starting compilation in watch mode",
+                        "endsPattern": "Watching\\sfor\\sfile\\schanges\\."
+                    }
+                }
+            ],
+            "isBackground": true
         }
     ]
 }

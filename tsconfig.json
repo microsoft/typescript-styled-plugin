@@ -5,7 +5,8 @@
         "outDir": "lib",
         "rootDir": "src",
         "strict": true,
-        "declaration": true
+        "declaration": true,
+        "sourceMap": true
     },
     "exclude": ["lib", "e2e", "node_modules", "test-workspace"]
 }
