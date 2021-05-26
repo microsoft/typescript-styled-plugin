@@ -27,7 +27,7 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
     public createVirtualDocument(
         context: TemplateContext
     ): vscode.TextDocument {
-        const contents = `${this.getVirtualDocumentWrapper(context)}${context.text}}`;
+        const contents = `${this.getVirtualDocumentWrapper(context)}${context.text}\n}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',
