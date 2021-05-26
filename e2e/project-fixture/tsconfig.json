@@ -1,9 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "es2015",
-    "module": "commonjs",
-    "plugins": [
-      { "name": "typescript-styled-plugin", "tags": ["css"] }
-    ]
-  }
+    "compilerOptions": {
+        "target": "es2019",
+        "module": "commonjs",
+        "plugins": [{ "name": "typescript-styled-plugin", "tags": ["css", "keyframes"] }]
+    }
 }
