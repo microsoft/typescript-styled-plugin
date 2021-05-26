@@ -27,7 +27,7 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
     public createVirtualDocument(
         context: TemplateContext
     ): vscode.TextDocument {
-        const contents = `${this.getVirtualDocumentRoot(context)}${context.text}}`;
+        const contents = `${this.getVirtualDocumentWrapper(context)}${context.text}}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',
@@ -60,14 +60,14 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
     }
 
     public toVirtualDocOffset(offset: number, context: TemplateContext): number {
-        return offset + this.getVirtualDocumentRoot(context).length;
+        return offset + this.getVirtualDocumentWrapper(context).length;
     }
 
     public fromVirtualDocOffset(offset: number, context: TemplateContext): number {
-        return offset - this.getVirtualDocumentRoot(context).length;
+        return offset - this.getVirtualDocumentWrapper(context).length;
     }
 
-    private getVirtualDocumentRoot(context: TemplateContext): string {
+    private getVirtualDocumentWrapper(context: TemplateContext): string {
         const tag = (context.node.parent as ts.Node & { tag: any })?.tag?.escapedText;
         return tag === 'keyframes' ? StyledVirtualDocumentFactory.wrapperPreKeyframes : StyledVirtualDocumentFactory.wrapperPreRoot;
     }
