@@ -10,8 +10,8 @@ export interface VirtualDocumentProvider {
     createVirtualDocument(context: TemplateContext): vscode.TextDocument;
     toVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
     fromVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
-    toVirtualDocOffset(offset: number): number;
-    fromVirtualDocOffset(offset: number): number;
+    toVirtualDocOffset(offset: number, context: TemplateContext): number;
+    fromVirtualDocOffset(offset: number, context: TemplateContext): number;
 }
 
 /**
@@ -21,24 +21,25 @@ export interface VirtualDocumentProvider {
  * since styled allows properties to be top level elements.
  */
 export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
-    private static readonly wrapperPre = ':root{\n';
+    private static readonly wrapperPreRoot = ':root{\n';
+    private static readonly wrapperPreKeyframes = '@keyframes custom {\n';
 
     public createVirtualDocument(
         context: TemplateContext
     ): vscode.TextDocument {
-        const contents = `${StyledVirtualDocumentFactory.wrapperPre}${context.text}\n}`;
+        const contents = `${this.getVirtualDocumentWrapper(context)}${context.text}\n}`;
         return {
             uri: 'untitled://embedded.scss',
             languageId: 'scss',
             version: 1,
             getText: () => contents,
             positionAt: (offset: number) => {
-                const pos = context.toPosition(this.fromVirtualDocOffset(offset));
+                const pos = context.toPosition(this.fromVirtualDocOffset(offset, context));
                 return this.toVirtualDocPosition(pos);
             },
             offsetAt: (p: vscode.Position) => {
                 const offset = context.toOffset(this.fromVirtualDocPosition(p));
-                return this.toVirtualDocOffset(offset);
+                return this.toVirtualDocOffset(offset, context);
             },
             lineCount: contents.split(/\n/g).length + 1,
         };
@@ -58,11 +59,16 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
         };
     }
 
-    public toVirtualDocOffset(offset: number): number {
-        return offset + StyledVirtualDocumentFactory.wrapperPre.length;
+    public toVirtualDocOffset(offset: number, context: TemplateContext): number {
+        return offset + this.getVirtualDocumentWrapper(context).length;
     }
 
-    public fromVirtualDocOffset(offset: number): number {
-        return offset - StyledVirtualDocumentFactory.wrapperPre.length;
+    public fromVirtualDocOffset(offset: number, context: TemplateContext): number {
+        return offset - this.getVirtualDocumentWrapper(context).length;
+    }
+
+    private getVirtualDocumentWrapper(context: TemplateContext): string {
+        const tag = (context.node.parent as ts.Node & { tag: any })?.tag?.escapedText;
+        return tag === 'keyframes' ? StyledVirtualDocumentFactory.wrapperPreKeyframes : StyledVirtualDocumentFactory.wrapperPreRoot;
     }
 }

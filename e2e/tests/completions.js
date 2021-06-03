@@ -9,7 +9,7 @@ const createServerWithMockFile = (fileContents) => {
     const server = createServer();
     openMockFile(server, mockFileName, fileContents);
     return server;
-}
+};
 
 describe('Completions', () => {
     it('should return property value completions for single line string', () => {
@@ -20,8 +20,8 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'rgba'));
         });
     });
 
@@ -32,23 +32,19 @@ describe('Completions', () => {
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isFalse(completionsResponse.body.some(item => item.name === 'darken'));
+            assert.isFalse(completionsResponse.body.some((item) => item.name === 'darken'));
         });
     });
 
     it('should return property value completions for multiline string', () => {
-        const server = createServerWithMockFile([
-            'const q = css`',
-            'color:',
-            '`'
-        ].join('\n'));
+        const server = createServerWithMockFile(['const q = css`', 'color:', '`'].join('\n'));
         server.sendCommand('completions', { file: mockFileName, offset: 22, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
@@ -60,7 +56,7 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
@@ -83,7 +79,7 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
@@ -95,19 +91,19 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should return completions between were placeholders are used as properties', () => {
-        const server = createServerWithMockFile('css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `')
+        const server = createServerWithMockFile('css`boarder: 1px solid ${"red"}; color: ; margin: ${20}; `');
         server.sendCommand('completions', { file: mockFileName, offset: 40, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
@@ -119,18 +115,18 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should return js completions inside placeholder', () => {
-        const server = createServerWithMockFile('const abc = 123; css`color: ${};`')
+        const server = createServerWithMockFile('const abc = 123; css`color: ${};`');
         server.sendCommand('completions', { file: mockFileName, offset: 31, line: 1 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'abc'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'abc'));
         });
     });
 
@@ -141,7 +137,7 @@ describe('Completions', () => {
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'substr'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'substr'));
         });
     });
 
@@ -152,72 +148,55 @@ describe('Completions', () => {
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should handle multiline value placeholder correctly ', () => {
-        const server = createServerWithMockFile([
-            'css`margin: ${',
-            '0',
-            "}; color: `"].join('\n'));
+        const server = createServerWithMockFile(['css`margin: ${', '0', '}; color: `'].join('\n'));
         server.sendCommand('completions', { file: mockFileName, offset: 10, line: 3 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should handle multiline rule placeholder correctly ', () => {
-        const server = createServerWithMockFile([
-            'css`',
-            '${',
-            'css`margin: 0;`',
-            '}',
-            'color: `'].join('\n'));
+        const server = createServerWithMockFile(['css`', '${', 'css`margin: 0;`', '}', 'color: `'].join('\n'));
         server.sendCommand('completions', { file: mockFileName, offset: 8, line: 5 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should return completions when placeholder is used as a selector', () => {
-        const server = createServerWithMockFile([
-            'css`${"button"} {',
-            '   color: ;',
-            '}',
-            'color: ;',
-            '`'].join('\n'));
+        const server = createServerWithMockFile(['css`${"button"} {', '   color: ;', '}', 'color: ;', '`'].join('\n'));
         server.sendCommand('completions', { file: mockFileName, line: 2, offset: 11 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
     it('should return completions inside of nested selector xx', () => {
-        const server = createServerWithMockFile([
-            'css`',
-            '    color: red;',
-            '    &:hover {',
-            '        color:   ',
-            '    }',
-            '`'].join('\n'));
+        const server = createServerWithMockFile(
+            ['css`', '    color: red;', '    &:hover {', '        color:   ', '    }', '`'].join('\n')
+        );
         server.sendCommand('completions', { file: mockFileName, line: 4, offset: 15 });
 
         return server.close().then(() => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
         });
     });
 
@@ -229,8 +208,8 @@ describe('Completions', () => {
             const completionsResponse = getFirstResponseOfType('completions', server);
             assert.isTrue(completionsResponse.success);
             assert.strictEqual(completionsResponse.body.length, 157);
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
-            assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
+            assert.isTrue(completionsResponse.body.some((item) => item.name === 'rgba'));
         });
     });
 
@@ -242,8 +221,8 @@ describe('Completions', () => {
         const completionsResponse = getFirstResponseOfType('completions', server);
         assert.isTrue(completionsResponse.success);
         assert.strictEqual(completionsResponse.body.length, 157);
-        assert.isTrue(completionsResponse.body.some(item => item.name === 'aliceblue'));
-        assert.isTrue(completionsResponse.body.some(item => item.name === 'rgba'));
+        assert.isTrue(completionsResponse.body.some((item) => item.name === 'aliceblue'));
+        assert.isTrue(completionsResponse.body.some((item) => item.name === 'rgba'));
     });
 
     it('should mark color completions with "color" kindModifier', async () => {
@@ -253,7 +232,18 @@ describe('Completions', () => {
         await server.close();
         const completionsResponse = getFirstResponseOfType('completions', server);
         assert.isTrue(completionsResponse.success);
-        const aliceBlue = completionsResponse.body.find(item => item.name === 'aliceblue');
+        const aliceBlue = completionsResponse.body.find((item) => item.name === 'aliceblue');
+        assert.isTrue(aliceBlue.kindModifiers === 'color');
+    });
+
+    it('should get completions inside keyframes blocks', async () => {
+        const server = createServerWithMockFile('const q = keyframes`0% {color:`');
+        server.sendCommand('completions', { file: mockFileName, offset: 31, line: 1 });
+
+        await server.close();
+        const completionsResponse = getFirstResponseOfType('completions', server);
+        assert.isTrue(completionsResponse.success);
+        const aliceBlue = completionsResponse.body.find((item) => item.name === 'aliceblue');
         assert.isTrue(aliceBlue.kindModifiers === 'color');
     });
 });
