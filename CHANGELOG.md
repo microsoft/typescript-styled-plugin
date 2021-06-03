@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.18.0 - June 03, 2021
+- Enable IntelliSense in `keyframes`. Thanks @jasonwilliams!
+
 # 0.17.0 - May 07, 2021
 - Apply in `keyframes` by default. Thanks @jasonwilliams!
 
