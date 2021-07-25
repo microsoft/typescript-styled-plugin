@@ -6,7 +6,7 @@
 import { Logger, TemplateContext, TemplateLanguageService } from 'typescript-template-language-service-decorator';
 import * as ts from 'typescript/lib/tsserverlibrary';
 import { getCSSLanguageService, getSCSSLanguageService, LanguageService, FoldingRange } from 'vscode-css-languageservice';
-import { getEmmetCompletionParticipants } from 'vscode-emmet-helper';
+import { doComplete as emmetDoComplete } from 'vscode-emmet-helper';
 import * as vscode from 'vscode-languageserver-types';
 import * as config from './_config';
 import { ConfigurationManager } from './_configuration';
@@ -223,11 +223,8 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const virtualPosition = this.virtualDocumentFactory.toVirtualDocPosition(position);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
-        const emmetResults: vscode.CompletionList = {
-            isIncomplete: true,
-            items: [],
-        };
-        this.cssLanguageService.setCompletionParticipants([getEmmetCompletionParticipants(doc, virtualPosition, 'css', this.configurationManager.config.emmet, emmetResults)]);
+        this.cssLanguageService.setCompletionParticipants([]);
+        const emmetResults = emmetDoComplete(doc, virtualPosition, 'css', this.configurationManager.config.emmet) || emptyCompletionList;
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
