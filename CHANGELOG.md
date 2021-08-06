@@ -1,5 +1,8 @@
 # Changelog
 
+# 0.18.1 - August 05, 2021
+- Update emmet. Thanks @jasonwilliams!
+
 # 0.18.0 - June 03, 2021
 - Enable IntelliSense in `keyframes`. Thanks @jasonwilliams!
 
