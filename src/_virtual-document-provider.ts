@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import { TemplateContext } from 'typescript-template-language-service-decorator';
-import * as vscode from 'vscode-languageserver-types';
+import {TextDocument, Position} from 'vscode-languageserver-textdocument';
 
 /**
  * Handles mapping between template contents to virtual documents.
  */
 export interface VirtualDocumentProvider {
-    createVirtualDocument(context: TemplateContext): vscode.TextDocument;
+    createVirtualDocument(context: TemplateContext): TextDocument;
     toVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
     fromVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
     toVirtualDocOffset(offset: number, context: TemplateContext): number;
@@ -26,7 +26,7 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
 
     public createVirtualDocument(
         context: TemplateContext
-    ): vscode.TextDocument {
+    ): TextDocument {
         const contents = `${this.getVirtualDocumentWrapper(context)}${context.text}\n}`;
         return {
             uri: 'untitled://embedded.scss',
@@ -37,7 +37,7 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
                 const pos = context.toPosition(this.fromVirtualDocOffset(offset, context));
                 return this.toVirtualDocPosition(pos);
             },
-            offsetAt: (p: vscode.Position) => {
+            offsetAt: (p: Position) => {
                 const offset = context.toOffset(this.fromVirtualDocPosition(p));
                 return this.toVirtualDocOffset(offset, context);
             },
