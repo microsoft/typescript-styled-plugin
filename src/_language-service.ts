@@ -423,6 +423,7 @@ function translateCompetionEntry(
         kindModifiers: getKindModifiers(item),
         sortText: item.sortText || item.label,
         replacementSpan: {
+            // The correct offset for start seems to be the range.start minus the wrapper
             start: doc.offsetAt((item as any).textEdit.range.start) - wrapper.length,
             length: doc.offsetAt((item as any).textEdit.range.end) - doc.offsetAt((item as any).textEdit.range.start),
         },
