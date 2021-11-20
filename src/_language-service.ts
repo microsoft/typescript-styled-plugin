@@ -11,6 +11,8 @@ import * as vscode from 'vscode-languageserver-types';
 import * as config from './_config';
 import { ConfigurationManager } from './_configuration';
 import { VirtualDocumentProvider } from './_virtual-document-provider';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+
 
 const cssErrorCode = 9999;
 
@@ -115,7 +117,9 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         position: ts.LineAndCharacter
     ): ts.WithMetadata<ts.CompletionInfo> {
         const items = this.getCompletionItems(context, position);
-        return translateCompletionItemsToCompletionInfo(this.typescript, items);
+        const doc = this.virtualDocumentFactory.createVirtualDocument(context);
+        const wrapper = this.virtualDocumentFactory.getVirtualDocumentWrapper(context);
+        return translateCompletionItemsToCompletionInfo(this.typescript, items, doc, wrapper);
     }
 
     public getCompletionEntryDetails(
@@ -242,7 +246,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
 
     private translateDiagnostics(
         diagnostics: vscode.Diagnostic[],
-        doc: vscode.TextDocument,
+        doc: TextDocument,
         context: TemplateContext,
         content: string
     ) {
@@ -254,7 +258,7 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
     private translateDiagnostic(
         diagnostic: vscode.Diagnostic,
         file: ts.SourceFile,
-        doc: vscode.TextDocument,
+        doc: TextDocument,
         context: TemplateContext,
         content: string
     ): ts.Diagnostic | undefined {
@@ -378,7 +382,9 @@ function filterScssCompletionItems(
 
 function translateCompletionItemsToCompletionInfo(
     typescript: typeof ts,
-    items: vscode.CompletionList
+    items: vscode.CompletionList,
+    doc: TextDocument,
+    wrapper: string
 ): ts.WithMetadata<ts.CompletionInfo> {
     return {
         metadata: {
@@ -387,7 +393,7 @@ function translateCompletionItemsToCompletionInfo(
         isGlobalCompletion: false,
         isMemberCompletion: false,
         isNewIdentifierLocation: false,
-        entries: items.items.map(x => translateCompetionEntry(typescript, x)),
+        entries: items.items.map(x => translateCompetionEntry(typescript, x, doc, wrapper)),
     };
 }
 
@@ -407,13 +413,19 @@ function translateCompletionItemsToCompletionEntryDetails(
 
 function translateCompetionEntry(
     typescript: typeof ts,
-    item: vscode.CompletionItem
+    item: vscode.CompletionItem,
+    doc: TextDocument,
+    wrapper: string
 ): ts.CompletionEntry {
     return {
         name: item.label,
         kind: item.kind ? translateCompletionItemKind(typescript, item.kind) : typescript.ScriptElementKind.unknown,
         kindModifiers: getKindModifiers(item),
         sortText: item.sortText || item.label,
+        replacementSpan: {
+            start: doc.offsetAt((item as any).textEdit.range.start) - wrapper.length,
+            length: doc.offsetAt((item as any).textEdit.range.end) - doc.offsetAt((item as any).textEdit.range.start),
+        },
     };
 }
 

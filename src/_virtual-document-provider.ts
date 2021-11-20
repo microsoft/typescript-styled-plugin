@@ -12,6 +12,7 @@ export interface VirtualDocumentProvider {
     fromVirtualDocPosition(position: ts.LineAndCharacter): ts.LineAndCharacter;
     toVirtualDocOffset(offset: number, context: TemplateContext): number;
     fromVirtualDocOffset(offset: number, context: TemplateContext): number;
+    getVirtualDocumentWrapper(context: TemplateContext): string;
 }
 
 /**
@@ -67,7 +68,7 @@ export class StyledVirtualDocumentFactory implements VirtualDocumentProvider {
         return offset - this.getVirtualDocumentWrapper(context).length;
     }
 
-    private getVirtualDocumentWrapper(context: TemplateContext): string {
+    public getVirtualDocumentWrapper(context: TemplateContext): string {
         const tag = (context.node.parent as ts.Node & { tag: any })?.tag?.escapedText;
         return tag === 'keyframes' ? StyledVirtualDocumentFactory.wrapperPreKeyframes : StyledVirtualDocumentFactory.wrapperPreRoot;
     }
