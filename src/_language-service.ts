@@ -221,9 +221,27 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         position: ts.LineAndCharacter
     ): vscode.CompletionList {
         const cached = this._completionsCache.getCached(context, position);
+        const completions: vscode.CompletionList = {
+            isIncomplete: false,
+            items: [],
+        };
+
         if (cached) {
             return cached;
         }
+
+        /**
+         * This would happen if a ` is triggered causing VSCode to open up two ``. At this stage completions aren't needed
+         * but they are still requested.
+         * Due to the fact there's nothing to complete (empty template) the language servers below end up requesting everything,
+         * causing a 3-4 second delay. When a template string is opened up we should do nothing and return an empty list.
+         *
+         * Also fixes: https://github.com/styled-components/vscode-styled-components/issues/276
+         **/
+        if (context.node.getText() === '``') {
+            return completions;
+        }
+
         const doc = this.virtualDocumentFactory.createVirtualDocument(context);
         const virtualPosition = this.virtualDocumentFactory.toVirtualDocPosition(position);
         const stylesheet = this.scssLanguageService.parseStylesheet(doc);
@@ -232,10 +250,8 @@ export class StyledTemplateLanguageService implements TemplateLanguageService {
         const completionsCss = this.cssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         const completionsScss = this.scssLanguageService.doComplete(doc, virtualPosition, stylesheet) || emptyCompletionList;
         completionsScss.items = filterScssCompletionItems(completionsScss.items);
-        const completions: vscode.CompletionList = {
-            isIncomplete: false,
-            items: [...completionsCss.items, ...completionsScss.items],
-        };
+
+        completions.items = [...completionsCss.items, ...completionsScss.items];
         if (emmetResults.items.length) {
             completions.items.push(...emmetResults.items);
             completions.isIncomplete = true;
