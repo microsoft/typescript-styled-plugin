@@ -407,6 +407,7 @@ function translateCompletionItemsToCompletionInfo(
             isIncomplete: items.isIncomplete,
         },
         isGlobalCompletion: false,
+        isIncomplete: items.isIncomplete || undefined,
         isMemberCompletion: false,
         isNewIdentifierLocation: false,
         entries: items.items.map(x => translateCompetionEntry(typescript, x, doc, wrapper)),
