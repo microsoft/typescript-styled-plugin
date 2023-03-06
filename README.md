@@ -1,5 +1,7 @@
 # TypeScript Styled Plugin
 
+> ❗️ This package has been deprecated in favor of [Styled component's fork](https://github.com/styled-components/typescript-styled-plugin).
+
 TypeScript server plugin that adds intellisense to [styled component](https://styled-components.com) css strings
 
 ![](documentation/preview.gif)
