@@ -15,10 +15,10 @@ TypeScript server plugin that adds intellisense to [styled component](https://st
 - Quick fixes for misspelled property names.
 
 ## Usage
-This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), [Visual Studio](https://www.visualstudio.com), and others. 
+This plugin requires TypeScript 2.4 or later. It can provide intellisense in both JavaScript and TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com), [Sublime with the TypeScript plugin](https://github.com/Microsoft/TypeScript-Sublime-Plugin), [Atom with the TypeScript plugin](https://atom.io/packages/atom-typescript), [Visual Studio](https://www.visualstudio.com), and others.
 
 ### With VS Code
-Just install the [VS Code Styled Components extension](https://github.com/styled-components/vscode-styled-components). This extension adds syntax highlighting and IntelliSense for styled components in JavaScript and TypeScript files. 
+Just install the [VS Code Styled Components extension](https://github.com/styled-components/vscode-styled-components). This extension adds syntax highlighting and IntelliSense for styled components in JavaScript and TypeScript files.
 
 If you are using a [workspace version of TypeScript]((https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions)) however, you must manually install the plugin along side the version of TypeScript in your workspace:
 
@@ -198,7 +198,7 @@ To disable error reporting, set `"validate": false` in the plugin configuration:
 }
 ```
 
-You can also configure how errors are reported using linter settings. 
+You can also configure how errors are reported using linter settings.
 
 ```json
 {
@@ -353,11 +353,11 @@ Selectors should not contain IDs because these rules are too tightly coupled wit
 
 ### Emmet in completion list
 
-You can now see your Emmet abbreviations expanded and included in the completion list. 
-An [upstream issue](https://github.com/Microsoft/TypeScript/issues/21999) with typescript blocks the Emmet entry in the completion list to get updated as you type. 
+You can now see your Emmet abbreviations expanded and included in the completion list.
+An [upstream issue](https://github.com/Microsoft/TypeScript/issues/21999) with typescript blocks the Emmet entry in the completion list to get updated as you type.
 So for now you will have to press `Ctrl+Space` after typing out the abbreviation.
 
-The below settings which are in sync with general Emmet settings in VS Code control the expanded Emmet abbreviations in the auto-completion list. 
+The below settings which are in sync with general Emmet settings in VS Code control the expanded Emmet abbreviations in the auto-completion list.
 
 #### showExpandedAbbreviation
 ```
