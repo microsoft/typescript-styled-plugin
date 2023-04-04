@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.18.3 - April 4, 2023
+- Pick up latest `typescript-template-language-service-decorator` with fix for TS 5.0
+- Mark package as deprecated in favor of https://github.com/styled-components/typescript-styled-plugin.
+
 ## 0.18.2 - December 06, 2021
 - Include completion spans in responses. Thanks @jasonwilliams!
 - Don't trigger completions when opening template tags. Thanks @jasonwilliams!
